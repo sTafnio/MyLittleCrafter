@@ -1,0 +1,18 @@
+// This is an example file for a bench craft using currency and the crafting bench.
+// All rules from ExampleCurrencyCraft.craft apply.
+// In order to use a crafting bench, make sure you have "Crafting Bench 2" in your hideout. Check the hideout editor.
+// Always use the full name of a craft including its values, e.g. "(25-34) to maximum Mana".
+// Bench crafts are indicated by the "Craft" prefix in the header.
+// Do not manually select or de-select any bench crafts. If something fails, just open the bench again.
+// The item in the bench when crafting starts is considered a potential crafting base.
+// The example below spams Orb of Alteration when no prefix is open.
+// It then crafts Mana on it when it does not already have a crafted mod.
+
+#Global
+Rarity == ItemRarity.Magic
+
+# Craft (25-34) to maximum Mana
+!ModsInfo.ExplicitMods.Any(DisplayName == "Upgraded") && ModsInfo.OpenPrefixCount >= 1
+
+#$Orb of Alteration
+ModsInfo.OpenPrefixCount < 1

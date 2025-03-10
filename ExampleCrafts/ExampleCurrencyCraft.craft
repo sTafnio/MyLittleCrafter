@@ -1,0 +1,47 @@
+// This is an example file for a regular craft using currency.
+// A crafting file contains conditions (steps) for the crafting process.
+// Each condition has the following format:
+// ConditionHeader: Indicated by a line starting with #.
+// ConditionType: Type of currency/craft to use for the condition. One Global must be present, as it is used to select items to craft on.
+// ConditionQuery: Query that gets compiled by IFL.
+// (optional) UseShift: Indicated by a $ in front of the condition header. Whether to hold shift for the currency usage.
+// Non-GlobalConditions: the FIRST condition to return true from top to bottom will be used in the current crafting step,
+// so if the Orb of Augmentation condition is met, it will not evaluate the Orb of Alteration condition.
+
+
+// Global condition. This is used to select items to craft on.
+#Global 
+ContainsString(BaseName, new[] { "Rustic Sash", "Chain Belt" })
+&& Rarity != ItemRarity.Unique
+
+#Orb of Transmutation 
+Rarity == ItemRarity.Normal
+
+#Orb of Scouring 
+Rarity == ItemRarity.Rare
+
+#Orb of Augmentation
+(
+    new[] {
+        ModsInfo.ExplicitMods.Any(Name == "IncreasedLife")
+    }.Count(x => x) == 1 &&
+    ModsInfo.OpenSuffixCount >= 1
+) ||
+(
+    new[] {
+        ModsInfo.ExplicitMods.Any(Name == "FireResist"),
+        ModsInfo.ExplicitMods.Any(Name == "ColdResist"),
+        ModsInfo.ExplicitMods.Any(Name == "LightningResist")
+    }.Count(x => x) == 1 &&
+    ModsInfo.OpenPrefixCount >= 1
+)
+
+#$Orb of Alteration 
+new[] {
+    ModsInfo.ExplicitMods.Any(Name == "FireResist"),
+    ModsInfo.ExplicitMods.Any(Name == "ColdResist"),
+    ModsInfo.ExplicitMods.Any(Name == "LightningResist"),
+    ModsInfo.ExplicitMods.Any(Name == "IncreasedLife")
+}.Count(x => x) < 2
+
+
