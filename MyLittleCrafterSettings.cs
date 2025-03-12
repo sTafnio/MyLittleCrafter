@@ -13,6 +13,7 @@ using MyLittleCrafter.Handlers;
 using static MyLittleCrafter.Enums.MyLittleCrafter;
 using static MyLittleCrafter.MyLittleCrafter;
 using MyLittleCrafter.Tracker;
+using ExileCore;
 
 namespace MyLittleCrafter;
 
@@ -228,9 +229,8 @@ public class SelectedCraftFileDisplay
 [Submenu(CollapsedByDefault = true)]
 public class StatTracker
 {
-    public CraftInfo LastTrackedCraft { get; set; } = null;
-    public SessionInfo SessionStats { get; set; } = new();
-    public AllTimeStats AllTimeStats { get; set; } = new();
+    public CraftingStats SessionStats { get; set; } = new();
+    public CraftingStats AllTimeStats { get; set; } = new();
 
     [JsonIgnore]
     public CustomNode TrackerNode { get; set; } = new();
@@ -245,15 +245,27 @@ public class StatTracker
                 ImGui.TreePop();
             }
 
-            if (ImGui.TreeNode("Last Craft"))
+            if (ImGui.TreeNode("Last Crafts"))
             {
-                LastTrackedCraft?.ToImGUI();
+                foreach (var craft in Tracker.Tracker.LastTrackedCrafts)
+                {
+                    if (ImGui.TreeNode(craft.CraftName + " - " + craft.StartTime.ToString("HH:mm")))
+                    {
+                        craft.ToImGUI();
+                        ImGui.TreePop();
+                    }
+                }
+
+                if (ImGui.Button("Reset Last Crafts"))
+                {
+                    Tracker.Tracker.ResetLastCrafts();
+                }
+
                 ImGui.TreePop();
             }
 
             if (ImGui.TreeNode("Session Stats"))
             {
-                // Use the session stats from settings directly
                 SessionStats.ToImGUI();
 
                 if (ImGui.Button("Reset Session Stats"))
@@ -270,17 +282,7 @@ public class StatTracker
 
                 if (ImGui.Button("Reset All-time Stats"))
                 {
-                    if (ImGui.IsKeyDown(ImGuiKey.LeftCtrl) || ImGui.IsKeyDown(ImGuiKey.RightCtrl))
-                    {
-                        AllTimeStats.Reset();
-                        ImGui.SameLine();
-                        ImGui.TextColored(new Vector4(0.2f, 0.8f, 0.2f, 1.0f), "Stats Reset!");
-                    }
-                    else
-                    {
-                        ImGui.SameLine();
-                        ImGui.TextColored(new Vector4(0.8f, 0.2f, 0.2f, 1.0f), "Hold CTRL to confirm reset");
-                    }
+                    AllTimeStats.Reset();
                 }
 
                 ImGui.TreePop();
@@ -322,9 +324,6 @@ public class Debug
             ImGui.Separator();
             var testCursorRect = Main?.GameController?.Game?.IngameState?.IngameUi?.Cursor?.GetClientRect();
             ImGui.Text($"Cursor Rect: {testCursorRect.Value.X} {testCursorRect.Value.Y} {testCursorRect.Value.Width} {testCursorRect.Value.Height}");
-
-            ImGui.Separator();
-            Main.Settings.Tracker.LastTrackedCraft?.ToImGUI();
         };
     }
 }

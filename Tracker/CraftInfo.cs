@@ -1,12 +1,15 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ImGuiNET;
+using static MyLittleCrafter.MyLittleCrafter;
 
 namespace MyLittleCrafter.Tracker;
 
 public class CraftInfo
 {
-    public string CraftName { get; set; } = string.Empty;
+    public DateTime StartTime { get; set; } = DateTime.Now;
+    public string CraftName { get; set; } = Main.Settings.FileOptions.SelectedCraftingFile.Value;
     public Dictionary<string, int> ResourcesUsed { get; set; } = [];
     public Dictionary<string, double> ResourcesCostPerOneUnit { get; set; } = [];
     public int FinishedItemCount { get; set; } = 0;
@@ -26,17 +29,42 @@ public class CraftInfo
     {
         ImGui.Indent(10);
 
-        ImGui.Text($"Craft: {CraftName}");
-        ImGui.Text($"Finished Items: {FinishedItemCount}");
-        ImGui.Text($"Total Cost: {TotalCost:F2}c");
-        ImGui.Text($"Cost Per Item: {CostPerItem:F2}c");
-        ImGui.Separator();
+        // Overview Table
+        if (ImGui.BeginTable("OverviewTable", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable | ImGuiTableFlags.PadOuterX))
+        {
+            // Set up columns
+            ImGui.TableSetupColumn($"{CraftName}", ImGuiTableColumnFlags.None, 0.7f);
+            ImGui.TableSetupColumn("", ImGuiTableColumnFlags.None, 0.3f);
+
+            ImGui.TableHeadersRow();
+
+            ImGui.TableNextRow();
+            ImGui.TableSetColumnIndex(0);
+            ImGui.Text($"Finished Items");
+            ImGui.TableSetColumnIndex(1);
+            ImGuiHelper.RightAlignText($"{FinishedItemCount}");
+
+            ImGui.TableNextRow();
+            ImGui.TableSetColumnIndex(0);
+            ImGui.Text($"Cost Per Item");
+            ImGui.TableSetColumnIndex(1);
+            ImGuiHelper.RightAlignText($"{Math.Round(CostPerItem, 2):F2}c");
+
+            ImGui.TableNextRow();
+            ImGui.TableSetColumnIndex(0);
+            ImGui.Text($"Total Cost");
+            ImGui.TableSetColumnIndex(1);
+            ImGuiHelper.RightAlignText($"{Math.Round(TotalCost, 2):F2}c");
+
+            ImGui.EndTable();
+        }
+
 
         // Resources Table
         if (ResourcesUsed.Count > 0 && ImGui.BeginTable("ResourcesTable", 4, ImGuiTableFlags.Sortable | ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable | ImGuiTableFlags.PadOuterX))
         {
             // Set up columns
-            ImGui.TableSetupColumn("Resource", ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.DefaultSort);
+            ImGui.TableSetupColumn("Resource", ImGuiTableColumnFlags.DefaultSort, 0.4f);
             ImGui.TableSetupColumn("Amount Used", ImGuiTableColumnFlags.None, 0.2f);
             ImGui.TableSetupColumn("Cost Per Unit", ImGuiTableColumnFlags.None, 0.2f);
             ImGui.TableSetupColumn("Total Cost", ImGuiTableColumnFlags.None, 0.2f);
@@ -70,14 +98,6 @@ public class CraftInfo
                     DisplayResourceRow(resource);
                 }
             }
-            else
-            {
-                // No sorting, display in default order
-                foreach (var resource in ResourcesUsed)
-                {
-                    DisplayResourceRow(resource);
-                }
-            }
 
             ImGui.EndTable();
         }
@@ -96,13 +116,13 @@ public class CraftInfo
             ImGui.Text(resourceName);
 
             ImGui.TableSetColumnIndex(1);
-            ImGuiHelper.RightAlignText(amount.ToString());
+            ImGuiHelper.RightAlignText($"{amount}");
 
             ImGui.TableSetColumnIndex(2);
-            ImGuiHelper.RightAlignText($"{costPerUnit:F2}c");
+            ImGuiHelper.RightAlignText($"{Math.Round(costPerUnit, 2):F2}c");
 
             ImGui.TableSetColumnIndex(3);
-            ImGuiHelper.RightAlignText($"{totalCost:F2}c");
+            ImGuiHelper.RightAlignText($"{Math.Round(totalCost, 2):F2}c");
         }
 
         ImGui.Unindent(10);

@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using ExileCore.PoEMemory.Models;
+using static MyLittleCrafter.Enums.MyLittleCrafter;
 using static MyLittleCrafter.MyLittleCrafter;
 
 namespace MyLittleCrafter.Tracker;
@@ -9,9 +12,9 @@ public static class Tracker
     public static Func<BaseItemType, double> GetBaseItemTypeValue { get; set; } = null;
     public static CraftInfo CurrentTrackedCraft { get; private set; } = null;
     public static bool IsTracking => CurrentTrackedCraft != null;
-
-    public static SessionInfo SessionStats => Main.Settings.Tracker.SessionStats;
-    public static AllTimeStats AllTimeStats => Main.Settings.Tracker.AllTimeStats;
+    public static List<CraftInfo> LastTrackedCrafts { get; set; } = [];
+    public static CraftingStats SessionStats => Main.Settings.Tracker.SessionStats;
+    public static CraftingStats AllTimeStats => Main.Settings.Tracker.AllTimeStats;
 
     public static void StartCraft()
     {
@@ -20,13 +23,7 @@ public static class Tracker
             StopCraft();
         }
 
-        CurrentTrackedCraft = new CraftInfo
-        {
-            CraftName = Main.Settings.FileOptions.SelectedCraftingFile.Value,
-            ResourcesUsed = [],
-            ResourcesCostPerOneUnit = [],
-            FinishedItemCount = 0
-        };
+        CurrentTrackedCraft = new CraftInfo();
     }
 
     public static void FinishItem(int count = 1)
@@ -46,14 +43,12 @@ public static class Tracker
             return;
         }
 
-        // Record the craft in session stats before clearing
+        // Record the craft
         SessionStats.RecordCraft(CurrentTrackedCraft);
-
-        // Also record the craft in all-time stats
         AllTimeStats.RecordCraft(CurrentTrackedCraft);
 
-        // Set the last tracked craft
-        Main.Settings.Tracker.LastTrackedCraft = CurrentTrackedCraft;
+        //  Add to the list of last tracked crafts
+        LastTrackedCrafts.Insert(0, CurrentTrackedCraft);
 
         CurrentTrackedCraft = null;
     }
@@ -77,62 +72,50 @@ public static class Tracker
 
     private static void TryUpdateResourceCost(string resourceName)
     {
-        try
+        var (actualResourceName, multiplier) = HarvestResourceOverride(resourceName);
+
+        var baseItem = new BaseItemType
         {
-            string actualResourceName = resourceName;
-            bool applySpecialMultiplier = false;
+            BaseName = actualResourceName,
+            ClassName = "StackableCurrency",
+            Metadata = string.Empty
+        };
 
-            // Check for special craft resources and map them to the correct lifeforce type
-            if (resourceName == "Reforge Cold")
-            {
-                actualResourceName = "YellowLifeforce";
-                applySpecialMultiplier = true;
-            }
-            else if (resourceName == "Reforge Lightning")
-            {
-                actualResourceName = "BlueLifeforce";
-                applySpecialMultiplier = true;
-            }
-            else if (resourceName == "Reforge Fire")
-            {
-                actualResourceName = "RedLifeforce";
-                applySpecialMultiplier = true;
-            }
-
-            var baseItem = new BaseItemType
-            {
-                BaseName = actualResourceName,
-                ClassName = "StackableCurrency",
-                Metadata = string.Empty
-            };
-
-            double valuePerUnit = GetBaseItemTypeValue(baseItem);
-
-            // Apply the 50x multiplier for special craft resources
-            if (applySpecialMultiplier)
-            {
-                valuePerUnit *= 50;
-            }
-
-            CurrentTrackedCraft.ResourcesCostPerOneUnit[resourceName] = Math.Round(valuePerUnit, 2);
+        if (GetBaseItemTypeValue != null)
+        {
+            double valuePerUnit = GetBaseItemTypeValue(baseItem) * multiplier;
+            CurrentTrackedCraft.ResourcesCostPerOneUnit[resourceName] = valuePerUnit;
         }
-        catch (Exception)
+        else
         {
+            Logger.Log(LogType.Debug, $"Failed to calculate resource cost - value calculator not initialized");
+            CurrentTrackedCraft.ResourcesCostPerOneUnit[resourceName] = 0;
         }
     }
 
-    public static void Reset()
+    public static (string, double) HarvestResourceOverride(string resourceName)
     {
-        CurrentTrackedCraft = null;
+        return resourceName switch
+        {
+            "Reforge Fire" => ("Wild Crystallised Lifeforce", 50),
+            "Reforge Lightning" => ("Primal Crystallised Lifeforce", 50),
+            "Reforge Cold" => ("Vivid Crystallised Lifeforce", 50),
+            "Reforge Physical" => ("Vivid Crystallised Lifeforce", 50),
+            "Reforge Life" => ("Wild Crystallised Lifeforce", 75),
+            "Reforge Defence" => ("Primal Crystallised Lifeforce", 75),
+            "Reforge Chaos" => ("Vivid Crystallised Lifeforce", 100),
+            "Reforge Attack" => ("Wild Crystallised Lifeforce", 75),
+            "Reforge Caster" => ("Primal Crystallised Lifeforce", 75),
+            "Reforge Speed" => ("Vivid Crystallised Lifeforce", 150),
+            "Reforge Critical" => ("Vivid Crystallised Lifeforce", 150),
+            "Reforge More Likely" => ("Wild Crystallised Lifeforce", 200),
+            "Reforge Less Likely" => ("Vivid Crystallised Lifeforce", 200),
+            _ => ((string, double))(resourceName, 1),
+        };
     }
 
-    public static void ResetSession()
+    public static void ResetLastCrafts()
     {
-        SessionStats.Reset();
-    }
-
-    public static void ResetAllTimeStats()
-    {
-        AllTimeStats.Reset();
+        LastTrackedCrafts = [];
     }
 }

@@ -65,6 +65,7 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
         if (PluginBridge != null)
         {
             Tracker.Tracker.GetBaseItemTypeValue = PluginBridge.GetMethod<Func<BaseItemType, double>>("NinjaPrice.GetBaseItemTypeValue");
+            Logger.Log(LogType.Info, "NinjaPrice plugin bridge found. NinjaPrice integration enabled.");
         }
         else
         {

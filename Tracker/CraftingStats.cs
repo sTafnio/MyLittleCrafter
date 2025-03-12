@@ -1,16 +1,16 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ImGuiNET;
 
 namespace MyLittleCrafter.Tracker;
 
-public class AllTimeStats
+public class CraftingStats
 {
 
     public Dictionary<string, int> FinishedItemsPerCraft { get; set; } = [];
     public Dictionary<string, int> TotalCurrencyUsed { get; set; } = [];
     public Dictionary<string, double> TotalCostPerCurrency { get; set; } = [];
-    public double TotalAllTimeCost => TotalCostPerCurrency.Values.Sum();
 
     public void RecordCraft(CraftInfo craft)
     {
@@ -45,16 +45,11 @@ public class AllTimeStats
 
     public void ToImGUI()
     {
-        // Simplified summary with only the requested information
-        ImGui.Text($"Total Items Finished: {FinishedItemsPerCraft.Values.Sum()}");
-        ImGui.Text($"Total Cost: {TotalAllTimeCost:F2}c");
-        ImGui.Separator();
-
         // Display crafts summary 
-        if (FinishedItemsPerCraft.Count > 0 && ImGui.BeginTable("AllTimeCraftsTable", 2, ImGuiTableFlags.Sortable | ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable))
+        if (FinishedItemsPerCraft.Count > 0 && ImGui.BeginTable($"CraftsTable", 2, ImGuiTableFlags.Sortable | ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable))
         {
-            ImGui.TableSetupColumn("Craft", ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.DefaultSort, 0.75f);
-            ImGui.TableSetupColumn("Items Finished", ImGuiTableColumnFlags.WidthFixed, 0.25f);
+            ImGui.TableSetupColumn("Craft", ImGuiTableColumnFlags.DefaultSort, 0.75f);
+            ImGui.TableSetupColumn("Items Finished", ImGuiTableColumnFlags.None, 0.25f);
             ImGui.TableHeadersRow();
 
             if (ImGui.TableGetSortSpecs() is { } sortSpecs)
@@ -85,7 +80,23 @@ public class AllTimeStats
                     ImGui.Text(craft.Key);
 
                     ImGui.TableSetColumnIndex(1);
-                    ImGuiHelper.RightAlignText(craft.Value.ToString());
+                    ImGuiHelper.RightAlignText($"{craft.Value}");
+                }
+
+                // If more than 1 craft, show total amount of items finished
+                if (FinishedItemsPerCraft.Count > 1)
+                {
+                    // Empty row for spacing
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text("");
+
+                    // Show total amount of items finished
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text("Total");
+                    ImGui.TableSetColumnIndex(1);
+                    ImGuiHelper.RightAlignText($"{FinishedItemsPerCraft.Values.Sum()}");
                 }
             }
             ImGui.EndTable();
@@ -93,12 +104,12 @@ public class AllTimeStats
 
         ImGui.Spacing();
 
-        // Display currency usage - make sortable
-        if (TotalCurrencyUsed.Count > 0 && ImGui.BeginTable("AllTimeCurrencyTable", 3, ImGuiTableFlags.Sortable | ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable))
+        // Display currency usage
+        if (TotalCurrencyUsed.Count > 0 && ImGui.BeginTable("CurrencyTable", 3, ImGuiTableFlags.Sortable | ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable))
         {
-            ImGui.TableSetupColumn("Currency", ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.DefaultSort, 0.5f);
-            ImGui.TableSetupColumn("Amount Used", ImGuiTableColumnFlags.WidthFixed, 0.25f);
-            ImGui.TableSetupColumn("Total Cost", ImGuiTableColumnFlags.WidthFixed, 0.25f);
+            ImGui.TableSetupColumn("Currency", ImGuiTableColumnFlags.DefaultSort, 0.5f);
+            ImGui.TableSetupColumn("Amount Used", ImGuiTableColumnFlags.None, 0.25f);
+            ImGui.TableSetupColumn("Total Cost", ImGuiTableColumnFlags.None, 0.25f);
             ImGui.TableHeadersRow();
 
             if (ImGui.TableGetSortSpecs() is { } sortSpecs)
@@ -134,10 +145,28 @@ public class AllTimeStats
                     ImGui.Text(currencyName);
 
                     ImGui.TableSetColumnIndex(1);
-                    ImGuiHelper.RightAlignText(amount.ToString());
+                    ImGuiHelper.RightAlignText($"{amount}");
 
                     ImGui.TableSetColumnIndex(2);
-                    ImGuiHelper.RightAlignText($"{totalCost:F2}c");
+                    ImGuiHelper.RightAlignText($"{Math.Round(totalCost, 2)}c");
+                }
+
+                // If more than 1 currency, show total amount of currency used
+                if (TotalCurrencyUsed.Count > 1)
+                {
+                    // Empty row for spacing
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text("");
+
+                    // Show total amount of currency used
+                    ImGui.TableNextRow();
+                    ImGui.TableSetColumnIndex(0);
+                    ImGui.Text("Total");
+                    ImGui.TableSetColumnIndex(1);
+                    ImGuiHelper.RightAlignText($"{TotalCurrencyUsed.Values.Sum()}");
+                    ImGui.TableSetColumnIndex(2);
+                    ImGuiHelper.RightAlignText($"{Math.Round(TotalCostPerCurrency.Values.Sum(), 2)}c");
                 }
             }
             ImGui.EndTable();

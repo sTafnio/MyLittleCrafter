@@ -16,7 +16,7 @@ public static class StateHandler
     public static bool IsCraftSelected { get; set; } = false;
     public static bool IsInGame => Main?.GameController?.Game?.IngameState?.InGame ?? false;
     public static bool IsGameFocused => Main?.GameController?.Window?.IsForeground() ?? false;
-    public static int Timeout => 5;
+    public static int Timeout => 3;
     public static List<string> RequiredCurrenciesForSelectedCraft => Main.CurrentCraftingConditionsList
         .Where(condition => condition.ConditionType == ConditionType.StackableCurrencyUse)
         .Select(condition => condition.Header)
