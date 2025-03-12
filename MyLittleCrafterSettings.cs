@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using MyLittleCrafter.Handlers;
 using static MyLittleCrafter.Enums.MyLittleCrafter;
 using static MyLittleCrafter.MyLittleCrafter;
+using MyLittleCrafter.Tracker;
 
 namespace MyLittleCrafter;
 
@@ -22,8 +23,8 @@ public class MyLittleCrafterSettings : ISettings
     public General General { get; set; } = new();
     public FileSelectionOptions FileOptions { get; set; } = new();
     public StashOptions StashOptions { get; set; } = new();
-    // public InventorySelectionOptions InventoryOptions { get; set; } = new();
     public SelectedCraftFileDisplay ConditionsDisplay { get; set; } = new();
+    public StatTracker Tracker { get; set; } = new();
     public Debug Debug { get; set; } = new();
     public Help Help { get; set; } = new();
 }
@@ -225,6 +226,71 @@ public class SelectedCraftFileDisplay
 }
 
 [Submenu(CollapsedByDefault = true)]
+public class StatTracker
+{
+    public CraftInfo LastTrackedCraft { get; set; } = null;
+    public SessionInfo SessionStats { get; set; } = new();
+    public AllTimeStats AllTimeStats { get; set; } = new();
+
+    [JsonIgnore]
+    public CustomNode TrackerNode { get; set; } = new();
+
+    public StatTracker()
+    {
+        TrackerNode.DrawDelegate = () =>
+        {
+            if (ImGui.TreeNode("Current Craft"))
+            {
+                Tracker.Tracker.CurrentTrackedCraft?.ToImGUI();
+                ImGui.TreePop();
+            }
+
+            if (ImGui.TreeNode("Last Craft"))
+            {
+                LastTrackedCraft?.ToImGUI();
+                ImGui.TreePop();
+            }
+
+            if (ImGui.TreeNode("Session Stats"))
+            {
+                // Use the session stats from settings directly
+                SessionStats.ToImGUI();
+
+                if (ImGui.Button("Reset Session Stats"))
+                {
+                    SessionStats.Reset();
+                }
+
+                ImGui.TreePop();
+            }
+
+            if (ImGui.TreeNode("All-time Stats"))
+            {
+                AllTimeStats.ToImGUI();
+
+                if (ImGui.Button("Reset All-time Stats"))
+                {
+                    if (ImGui.IsKeyDown(ImGuiKey.LeftCtrl) || ImGui.IsKeyDown(ImGuiKey.RightCtrl))
+                    {
+                        AllTimeStats.Reset();
+                        ImGui.SameLine();
+                        ImGui.TextColored(new Vector4(0.2f, 0.8f, 0.2f, 1.0f), "Stats Reset!");
+                    }
+                    else
+                    {
+                        ImGui.SameLine();
+                        ImGui.TextColored(new Vector4(0.8f, 0.2f, 0.2f, 1.0f), "Hold CTRL to confirm reset");
+                    }
+                }
+
+                ImGui.TreePop();
+            }
+        };
+
+    }
+}
+
+[Submenu(CollapsedByDefault = true)]
 public class Debug
 {
     [Menu("Enable Debug", "Enables some extra logging. Spams the Debug Window, so only really useful when the log file is needed.")]
@@ -256,6 +322,9 @@ public class Debug
             ImGui.Separator();
             var testCursorRect = Main?.GameController?.Game?.IngameState?.IngameUi?.Cursor?.GetClientRect();
             ImGui.Text($"Cursor Rect: {testCursorRect.Value.X} {testCursorRect.Value.Y} {testCursorRect.Value.Width} {testCursorRect.Value.Height}");
+
+            ImGui.Separator();
+            Main.Settings.Tracker.LastTrackedCraft?.ToImGUI();
         };
     }
 }

@@ -1,10 +1,7 @@
 using System;
 using System.Threading;
-using System.Windows.Forms;
-using ExileCore;
 using ExileCore.Shared;
 using MyLittleCrafter.Handlers;
-using MyLittleCrafter.Items;
 using static MyLittleCrafter.Enums.MyLittleCrafter;
 using static MyLittleCrafter.MyLittleCrafter;
 
@@ -63,6 +60,7 @@ public static class FullStashCraftingManager
                     // Item can never be finished outside of the currency stash
                     if (itemEvaluation.IsItemFinished)
                     {
+                        Tracker.Tracker.FinishItem();
                         Logger.Log(LogType.CraftingState, $"Item {itemIndex} is finished.");
                         if (!await CraftingHandler.MoveItemFromTo(craftingBase, StashHandler.CurrencyStashIndex, StashHandler.OutputStashIndex, token)) return false;
                         break;
@@ -88,6 +86,4 @@ public static class FullStashCraftingManager
             return false;
         }
     }
-
-
 }

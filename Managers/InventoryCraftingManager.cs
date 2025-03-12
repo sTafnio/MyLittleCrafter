@@ -28,6 +28,7 @@ public static class InventoryCraftingManager
                     // If the item is finished, break the loop
                     if (itemEvaluation.IsItemFinished)
                     {
+                        Tracker.Tracker.FinishItem();
                         Logger.Log(LogType.CraftingState, $"Item {itemIndex} is finished.");
                         break;
                     }

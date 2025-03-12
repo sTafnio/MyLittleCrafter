@@ -46,6 +46,7 @@ public static class HarvestCraftingManager
                     // If the item is finished, move it back to the player inventory and break the loop
                     if (itemEvaluation.IsItemFinished)
                     {
+                        Tracker.Tracker.FinishItem();
                         Logger.Log(LogType.CraftingState, $"Item {itemIndex} is finished.");
                         if (!await CraftingHandler.RemoveItemFromInventory(HarvestBenchHandler.HarvestBenchServerInventory, craftingBase.ClientRect, token)) return false;
                         break;

@@ -16,7 +16,8 @@ using InputHumanizer.Input;
 using static MyLittleCrafter.Enums.MyLittleCrafter;
 using Vector2N = System.Numerics.Vector2;
 using ExileCore.Shared.Helpers;
-
+using ExileCore.PoEMemory.Models;
+using MyLittleCrafter.Tracker;
 
 namespace MyLittleCrafter;
 
@@ -33,6 +34,7 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
     private List<string> availableCraftFilesList = [];
     public List<CraftCondition> CurrentCraftingConditionsList = [];
     public List<CraftingBase> ItemsToCraftOnList = [];
+    public PluginBridge PluginBridge;
 
     public MyLittleCrafter()
     {
@@ -59,7 +61,15 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
             FileHandler.LoadCraftingFile(Settings.FileOptions.SelectedCraftingFile);
         }
 
-        // Settings.InventoryOptions.AutoMatchAll.OnValueChanged += (_, _) => SelectedItemsList.Clear();
+        PluginBridge = GameController.PluginBridge;
+        if (PluginBridge != null)
+        {
+            Tracker.Tracker.GetBaseItemTypeValue = PluginBridge.GetMethod<Func<BaseItemType, double>>("NinjaPrice.GetBaseItemTypeValue");
+        }
+        else
+        {
+            Logger.Log(LogType.Info, "NinjaPrice plugin bridge not found. NinjaPrice integration will be disabled.");
+        }
 
         return true;
     }
@@ -131,6 +141,8 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
 
         StateHandler.CurrentlySelectedCurrency = string.Empty;
 
+        Tracker.Tracker.StopCraft();
+
         Logger.Log(LogType.Info, "Crafter has been stopped.");
     }
 
@@ -156,6 +168,8 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
         await Task.Delay(500, token);
 
         if (!CraftingSetupManager.SetUpCrafting()) return false;
+
+        Tracker.Tracker.StartCraft();
 
         var tryGetInputController = GameController.PluginBridge.GetMethod<Func<string, IInputController>>("InputHumanizer.TryGetInputController");
         if (tryGetInputController == null)

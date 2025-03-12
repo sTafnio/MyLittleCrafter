@@ -5,7 +5,6 @@ using System.Windows.Forms;
 using ExileCore;
 using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
-using ExileCore.Shared.Enums;
 using ImGuiNET;
 using MyLittleCrafter.IFL;
 using MyLittleCrafter.Items;
@@ -31,7 +30,7 @@ public static class CraftingHandler
 
     public static async SyncTask<bool> ApplyCurrency(
         CraftingBase craftingBase,
-        EvaluationResult evaluation,
+        EvaluationResult evaluationResult,
         ItemLocation currencySource,
         CancellationToken token)
     {
@@ -46,9 +45,9 @@ public static class CraftingHandler
                 initialServerRequestCounter = PlayerInventoryHandler.PlayerInventoryServerRequestCounter;
 
                 // Currency availability check in player inventory
-                if (!PlayerInventoryHandler.IsCurrencyAvailableInPlayerInventory(evaluation.CurrencyOrCraftName))
+                if (!PlayerInventoryHandler.IsCurrencyAvailableInPlayerInventory(evaluationResult.CurrencyOrCraftName))
                 {
-                    Logger.Log(LogType.Error, $"Currency {evaluation.CurrencyOrCraftName} not available in player inventory.");
+                    Logger.Log(LogType.Error, $"Currency {evaluationResult.CurrencyOrCraftName} not available in player inventory.");
                     return false;
                 }
             }
@@ -58,9 +57,9 @@ public static class CraftingHandler
                 initialServerRequestCounter = StashHandler.CurrencyStashServerRequestCounter;
 
                 // Currency availability check in currency stash
-                if (!StashHandler.IsCurrencyAvailableInCurrencyStash(evaluation.CurrencyOrCraftName))
+                if (!StashHandler.IsCurrencyAvailableInCurrencyStash(evaluationResult.CurrencyOrCraftName))
                 {
-                    Logger.Log(LogType.Error, $"Currency {evaluation.CurrencyOrCraftName} not available in currency stash.");
+                    Logger.Log(LogType.Error, $"Currency {evaluationResult.CurrencyOrCraftName} not available in currency stash.");
                     return false;
                 }
             }
@@ -71,7 +70,7 @@ public static class CraftingHandler
             }
 
             // If wrong currency is selected, deselect it
-            if (StateHandler.CurrentlySelectedCurrency != string.Empty && StateHandler.CurrentlySelectedCurrency != evaluation.CurrencyOrCraftName)
+            if (StateHandler.CurrentlySelectedCurrency != string.Empty && StateHandler.CurrentlySelectedCurrency != evaluationResult.CurrencyOrCraftName)
             {
                 if (!await DeselectCurrency(StateHandler.CurrentlySelectedCurrency, token)) return false;
             }
@@ -80,7 +79,7 @@ public static class CraftingHandler
             if (StateHandler.CurrentlySelectedCurrency == string.Empty)
             {
                 // If using shift before selecting currency
-                if (evaluation.UseShift)
+                if (evaluationResult.UseShift)
                 {
                     if (!await Main.InputController.KeyDown(Keys.LShiftKey, token)) return false;
                 }
@@ -88,16 +87,16 @@ public static class CraftingHandler
                 // Select currency based on source
                 if (currencySource == ItemLocation.PlayerInventory)
                 {
-                    if (!await SelectCurrency(PlayerInventoryHandler.PlayerInventoryServerInventory, craftingBase, evaluation.CurrencyOrCraftName, token)) return false;
+                    if (!await SelectCurrency(PlayerInventoryHandler.PlayerInventoryServerInventory, craftingBase, evaluationResult.CurrencyOrCraftName, token)) return false;
                 }
                 else // CurrencyStash
                 {
-                    if (!await SelectCurrencyInCurrencyStash(evaluation.CurrencyOrCraftName, token)) return false;
+                    if (!await SelectCurrencyInCurrencyStash(evaluationResult.CurrencyOrCraftName, token)) return false;
                 }
             }
 
             // Correct currency selected
-            if (StateHandler.CurrentlySelectedCurrency == evaluation.CurrencyOrCraftName)
+            if (StateHandler.CurrentlySelectedCurrency == evaluationResult.CurrencyOrCraftName)
             {
                 if (!await ClickOnItemOrUI(craftingBase.ClientRect, token)) return false;
             }
@@ -121,7 +120,8 @@ public static class CraftingHandler
                 }
             }
 
-            Logger.Log(LogType.Debug, $"Successfully applied {evaluation.CurrencyOrCraftName}.");
+            Tracker.Tracker.UseResource(evaluationResult.CurrencyOrCraftName);
+            Logger.Log(LogType.Debug, $"Successfully applied {evaluationResult.CurrencyOrCraftName}.");
             return true;
         }
         catch (OperationCanceledException)
@@ -200,6 +200,7 @@ public static class CraftingHandler
                 return false;
             }
 
+            Tracker.Tracker.UseResource(evaluationResult.CurrencyOrCraftName);
             Logger.Log(LogType.Debug, $"Successfully used {evaluationResult.CurrencyOrCraftName}.");
             return true;
         }

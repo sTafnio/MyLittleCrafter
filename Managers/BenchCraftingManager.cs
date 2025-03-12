@@ -1,5 +1,4 @@
 using System;
-using System.Configuration;
 using System.Threading;
 using ExileCore.Shared;
 using MyLittleCrafter.Handlers;
@@ -47,6 +46,7 @@ public static class BenchCraftingManager
                     // If the item is finished, move it back to the player inventory and break the loop
                     if (itemEvaluation.IsItemFinished)
                     {
+                        Tracker.Tracker.FinishItem();
                         Logger.Log(LogType.CraftingState, $"Item {itemIndex} is finished.");
                         if (!await CraftingHandler.RemoveItemFromInventory(CraftingBenchHandler.CraftingBenchServerInventory, craftingBase.ClientRect, token)) return false;
                         break;

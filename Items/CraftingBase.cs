@@ -1,5 +1,4 @@
 using ExileCore.PoEMemory.MemoryObjects;
-using ExileCore.Shared.Enums;
 using ItemFilterLibrary;
 using MyLittleCrafter.Handlers;
 using SharpDX;
@@ -7,7 +6,6 @@ using static ExileCore.PoEMemory.MemoryObjects.ServerInventory;
 using static MyLittleCrafter.Enums.MyLittleCrafter;
 using static MyLittleCrafter.MyLittleCrafter;
 using System.Threading;
-using System.Threading.Tasks;
 using ExileCore.Shared;
 
 namespace MyLittleCrafter.Items;
