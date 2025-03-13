@@ -82,22 +82,6 @@ public static class StateHandler
         IsCraftSelected = false;
     }
 
-    // public static void ResetHarvestCraftSelection()
-    // {
-    //     if (!IsCraftSelected) return;
-    //     if (HarvestBenchHandler.IsHarvestBenchPanelOpen) return;
-
-    //     IsCraftSelected = false;
-    // }
-
-    // public static void ResetCraftingBenchCraftSelection()
-    // {
-    //     if (!IsCraftSelected) return;
-    //     if (CraftingBenchHandler.IsCraftingBenchPanelOpen) return;
-
-    //     IsCraftingBenchCraftSelected = false;
-    // }
-
     private static bool TryGetCursorState(out MouseActionType cursorState)
     {
         var gameController = Main.GameController;

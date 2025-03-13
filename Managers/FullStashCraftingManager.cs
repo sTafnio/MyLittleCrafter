@@ -53,7 +53,6 @@ public static class FullStashCraftingManager
                     if (craftingBase.ItemLocation == ItemLocation.InputStash)
                     {
                         if (!await CraftingHandler.MoveItemFromTo(craftingBase, StashHandler.InputStashIndex, StashHandler.CurrencyStashIndex, token)) return false;
-                        await Task.Delay(StateHandler.GetServerLatency(), token); // Delay here to fix slow update of IngameUI
                         craftingBase.OnMovedToCurrencyStash();
                     }
 
@@ -75,7 +74,6 @@ public static class FullStashCraftingManager
                     }
 
                     // Update the crafting base 
-                    await Task.Delay(StateHandler.GetServerLatency(), token); // Delay here to fix slow update of IngameUI
                     if (!await craftingBase.UpdateItemDataAsync(token)) return false;
                 }
             }

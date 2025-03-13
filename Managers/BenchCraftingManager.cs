@@ -55,7 +55,6 @@ public static class BenchCraftingManager
                     // If item evaluation type is currency, apply it
                     else if (itemEvaluation.ConditionType == ConditionType.StackableCurrencyUse)
                     {
-                        // if (!await CraftingHandler.ApplyCurrencyFromInventory(PlayerInventoryHandler.PlayerInventory, craftingBase, itemEvaluation, token)) return false;
                         if (!await CraftingHandler.ApplyCurrency(craftingBase, itemEvaluation, ItemLocation.PlayerInventory, token)) return false;
                     }
 

@@ -128,6 +128,8 @@ public static class CraftingHandler
             {
                 StateHandler.CurrentlySelectedCurrency = string.Empty;
             }
+
+            await Task.Delay(StateHandler.GetServerLatency(), token);
             return true;
         }
         catch (OperationCanceledException)
@@ -208,6 +210,8 @@ public static class CraftingHandler
 
             Tracker.Tracker.UseResource(evaluationResult.CurrencyOrCraftName);
             Logger.Log(LogType.Debug, $"Successfully used {evaluationResult.CurrencyOrCraftName}.");
+
+            await Task.Delay(StateHandler.GetServerLatency(), token);
             return true;
         }
         catch (OperationCanceledException)
@@ -242,6 +246,8 @@ public static class CraftingHandler
             if (!await Main.InputController.KeyUp(Keys.LControlKey, false, token)) return false;
 
             Logger.Log(LogType.Debug, $"Successfully removed item.");
+
+            await Task.Delay(StateHandler.GetServerLatency(), token);
             return true;
         }
         catch (OperationCanceledException)
@@ -276,6 +282,8 @@ public static class CraftingHandler
             }
 
             Logger.Log(LogType.Debug, $"Successfully removed item from visible stash.");
+
+            await Task.Delay(StateHandler.GetServerLatency(), token);
             return true;
         }
         catch (OperationCanceledException)

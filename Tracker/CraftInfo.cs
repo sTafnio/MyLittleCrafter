@@ -27,8 +27,6 @@ public class CraftInfo
 
     public void ToImGUI()
     {
-        ImGui.Indent(10);
-
         // Overview Table
         if (ImGui.BeginTable("OverviewTable", 2, ImGuiTableFlags.Borders | ImGuiTableFlags.Resizable | ImGuiTableFlags.PadOuterX))
         {
@@ -124,7 +122,5 @@ public class CraftInfo
             ImGui.TableSetColumnIndex(3);
             ImGuiHelper.RightAlignText($"{Math.Round(totalCost, 2):F2}c");
         }
-
-        ImGui.Unindent(10);
     }
 }

@@ -249,7 +249,7 @@ public class StatTracker
             {
                 foreach (var craft in Tracker.Tracker.LastTrackedCrafts)
                 {
-                    if (ImGui.TreeNode(craft.CraftName + " - " + craft.StartTime.ToString("HH:mm")))
+                    if (ImGui.TreeNode(craft.CraftName + " - " + craft.StartTime.ToString("HH:mm") + " - " + $"{craft.FinishedItemCount}"))
                     {
                         craft.ToImGUI();
                         ImGui.TreePop();
