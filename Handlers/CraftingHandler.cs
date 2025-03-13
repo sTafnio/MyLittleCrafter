@@ -122,6 +122,12 @@ public static class CraftingHandler
 
             Tracker.Tracker.UseResource(evaluationResult.CurrencyOrCraftName);
             Logger.Log(LogType.Debug, $"Successfully applied {evaluationResult.CurrencyOrCraftName}.");
+
+            // Reset selected currency if shift was not held down
+            if (!evaluationResult.UseShift)
+            {
+                StateHandler.CurrentlySelectedCurrency = string.Empty;
+            }
             return true;
         }
         catch (OperationCanceledException)
@@ -370,7 +376,6 @@ public static class CraftingHandler
 
             Logger.Log(LogType.Debug, $"Successfully deselected {currency}.");
             StateHandler.CurrentlySelectedCurrency = string.Empty;
-
             return true;
         }
         catch (OperationCanceledException)
@@ -395,7 +400,6 @@ public static class CraftingHandler
 
         Logger.Log(LogType.Debug, $"Successfully selected {currency}.");
         StateHandler.CurrentlySelectedCurrency = currency;
-
         return true;
     }
 
@@ -413,13 +417,11 @@ public static class CraftingHandler
 
         Logger.Log(LogType.Debug, $"Successfully selected {currency}.");
         StateHandler.CurrentlySelectedCurrency = currency;
-
         return true;
     }
 
     public static async SyncTask<bool> ClickOnItemOrUI(RectangleF clientRect, CancellationToken token)
     {
-
         if (StateHandler.IsCursorOverRectangle(clientRect))
         {
             await Task.Delay(Main.InputController.GenerateDelay(), token); // Delay here to not spam too quickly if at the right position
@@ -478,7 +480,3 @@ public static class CraftingHandler
         }
     }
 }
-
-
-
-
