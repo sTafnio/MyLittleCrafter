@@ -17,7 +17,6 @@ using static MyLittleCrafter.Enums.MyLittleCrafter;
 using Vector2N = System.Numerics.Vector2;
 using ExileCore.Shared.Helpers;
 using ExileCore.PoEMemory.Models;
-using MyLittleCrafter.Tracker;
 
 namespace MyLittleCrafter;
 
@@ -60,6 +59,11 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
         {
             FileHandler.LoadCraftingFile(Settings.FileOptions.SelectedCraftingFile);
         }
+
+        Settings.DiscordNotifications.TestWebhook.OnPressed += () =>
+        {
+            DiscordService.SendDiscordNotification("Test notification from MyLittleCrafter!", null, true);
+        };
 
         PluginBridge = GameController.PluginBridge;
         if (PluginBridge != null)
@@ -142,7 +146,16 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
 
         StateHandler.CurrentlySelectedCurrency = string.Empty;
 
+        // Stop tracking the current craft
         Tracker.Tracker.StopCraft();
+
+        // Send Discord notification if enabled
+        if (Settings.DiscordNotifications.EnableDiscordNotifications.Value)
+        {
+            string messageContent = Settings.DiscordNotifications.MessageContent.Value;
+            string statsContent = DiscordService.FormatCraftStats(Settings.Tracker.SessionStats);
+            DiscordService.SendDiscordNotification(messageContent, statsContent);
+        }
 
         Logger.Log(LogType.Info, "Crafter has been stopped.");
     }
