@@ -69,7 +69,6 @@ public static class FullStashCraftingManager
                     // If item evaluation type is currency, apply it
                     else if (itemEvaluation.ConditionType == ConditionType.StackableCurrencyUse)
                     {
-                        // if (!await CraftingHandler.ApplyCurrencyFromCurrencyStash(craftingBase, itemEvaluation, token)) return false;
                         if (!await CraftingHandler.ApplyCurrency(craftingBase, itemEvaluation, ItemLocation.CurrencyStash, token)) return false;
                     }
 

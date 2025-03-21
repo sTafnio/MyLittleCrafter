@@ -78,12 +78,14 @@ public static class DiscordService
         }
     }
 
-    public static string FormatCraftStats(CraftingStats stats)
+    public static string FormatCraftStats(CraftInfo craft)
     {
-        if (stats == null) return "";
+        if (craft == null) return "";
 
-        // Only get total finished items
-        int totalItems = stats.FinishedItemsPerCraft.Values.Sum();
-        return $"**{totalItems}** items completed";
+        int totalItems = craft.FinishedItemCount;
+
+        if (totalItems == 0) return "No items completed";
+
+        return $"{totalItems} items completed";
     }
 }

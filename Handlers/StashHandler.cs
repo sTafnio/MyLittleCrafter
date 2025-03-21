@@ -42,7 +42,7 @@ public static class StashHandler
     public static InventoryType OutputStashTabType => GetInventoryTypeForStashAtIndex(OutputStashIndex);
 
 
-    public static int CurrentVisibleStashIndex => StashElement?.Inventories.FindIndex(inventory => inventory.Inventory.IsVisible) ?? -1;
+    public static int CurrentVisibleStashIndex => StashElement?.Inventories.FindIndex(inventory => inventory?.Inventory != null && inventory.Inventory.IsVisible) ?? -1;
     public static List<InventSlotItem> CraftableInventSlotItemsInInputStash => InventoryHandler.GetCraftableInventSlotItemsFromServerInventory(InputStashServerInventory);
 
 

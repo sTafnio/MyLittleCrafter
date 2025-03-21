@@ -153,7 +153,7 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
         if (Settings.DiscordNotifications.EnableDiscordNotifications.Value)
         {
             string messageContent = Settings.DiscordNotifications.MessageContent.Value;
-            string statsContent = DiscordService.FormatCraftStats(Settings.Tracker.SessionStats);
+            string statsContent = DiscordService.FormatCraftStats(Tracker.Tracker.LastTrackedCrafts[0]);
             DiscordService.SendDiscordNotification(messageContent, statsContent);
         }
 
