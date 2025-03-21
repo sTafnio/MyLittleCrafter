@@ -28,7 +28,6 @@ public class MyLittleCrafterSettings : ISettings
     public StatTracker Tracker { get; set; } = new();
     public DiscordNotifications DiscordNotifications { get; set; } = new();
     public Debug Debug { get; set; } = new();
-    public Help Help { get; set; } = new();
 }
 
 [Submenu(EnableCollapsing = false)]
@@ -327,23 +326,6 @@ public class Debug
             ImGui.Text($"Cursor Rect: {testCursorRect.Value.X} {testCursorRect.Value.Y} {testCursorRect.Value.Width} {testCursorRect.Value.Height}");
         };
     }
-}
-
-[Submenu(CollapsedByDefault = true)]
-public class Help
-{
-    [JsonIgnore]
-    public CustomNode HelpText { get; set; } = new();
-
-    public Help()
-    {
-        HelpText.DrawDelegate = () =>
-        {
-            ImGui.TextWrapped(helpText);
-        };
-    }
-    private readonly string helpText = "Check the example crafting files that I hopefully provided in the source folder of this plugin:)";
-
 }
 
 [Submenu(CollapsedByDefault = true)]
