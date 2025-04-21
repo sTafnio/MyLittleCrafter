@@ -6,7 +6,6 @@ using Newtonsoft.Json;
 using static MyLittleCrafter.Enums.MyLittleCrafter;
 using static MyLittleCrafter.MyLittleCrafter;
 using MyLittleCrafter.Tracker;
-using System.Linq;
 
 namespace MyLittleCrafter;
 

@@ -65,6 +65,22 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
             DiscordService.SendDiscordNotification("Test notification from MyLittleCrafter!", null, true);
         };
 
+        // Register system actions test buttons
+        Settings.SystemOptions.TestCloseExileAPI.OnPressed += () =>
+        {
+            SystemService.CloseExileAPI(Settings.SystemOptions.SendNotificationBeforeAction);
+        };
+
+        Settings.SystemOptions.TestCloseGame.OnPressed += () =>
+        {
+            SystemService.CloseGame(Settings.SystemOptions.SendNotificationBeforeAction);
+        };
+
+        Settings.SystemOptions.TestShutdown.OnPressed += () =>
+        {
+            SystemService.ShutdownComputer(Settings.SystemOptions.SendNotificationBeforeAction);
+        };
+
         PluginBridge = GameController.PluginBridge;
         if (PluginBridge != null)
         {
@@ -158,6 +174,24 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
         }
 
         Logger.Log(LogType.Info, "Crafter has been stopped.");
+
+        // Execute system actions if enabled
+        var sendNotification = Settings.SystemOptions.SendNotificationBeforeAction.Value;
+
+        if (Settings.SystemOptions.CloseExileAPIOnStop.Value)
+        {
+            SystemService.CloseExileAPI(sendNotification);
+        }
+
+        if (Settings.SystemOptions.CloseGameOnStop.Value)
+        {
+            SystemService.CloseGame(sendNotification);
+        }
+
+        if (Settings.SystemOptions.ShutdownPCOnStop.Value)
+        {
+            SystemService.ShutdownComputer(sendNotification);
+        }
     }
 
     private void ResetCancellationTokenSource()
