@@ -16,7 +16,7 @@ public static class StateHandler
     public static bool IsCraftSelected { get; set; } = false;
     public static bool IsInGame => Main?.GameController?.Game?.IngameState?.InGame ?? false;
     public static bool IsGameFocused => Main?.GameController?.Window?.IsForeground() ?? false;
-    public static int Timeout => 3;
+    public static int Timeout => ServerLatency * 100;
     public static List<string> RequiredCurrenciesForSelectedCraft => Main.CurrentCraftingConditionsList
         .Where(condition => condition.ConditionType == ConditionType.StackableCurrencyUse)
         .Select(condition => condition.Header)
@@ -25,7 +25,7 @@ public static class StateHandler
     public static bool IsInGameUiElementVisible(Func<IngameUIElements, Element> panelSelector) =>
         panelSelector(Main?.GameController?.Game?.IngameState?.IngameUi)?.IsVisible ?? false;
 
-    public static int GetServerLatency() => Main?.GameController?.IngameState?.ServerData?.Latency ?? 500;
+    public static int ServerLatency => Main?.GameController?.IngameState?.ServerData?.Latency ?? 500;
 
     public static bool IsCursorOverRectangle(RectangleF clientRect) =>
         Main?.GameController?.Game?.IngameState?.IngameUi?.Cursor?.GetClientRect().Intersects(clientRect) ?? false;

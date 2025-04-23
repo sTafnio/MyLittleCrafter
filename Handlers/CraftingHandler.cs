@@ -18,7 +18,6 @@ public static class CraftingHandler
 {
     public static async SyncTask<bool> ShiftUpIfDown(CancellationToken token)
     {
-        // Release Shift if held down
         if (Input.IsKeyDown(Keys.LShiftKey))
         {
             if (!await Main.InputController.KeyUp(Keys.LShiftKey, false, token)) return false;
@@ -28,11 +27,7 @@ public static class CraftingHandler
         return true;
     }
 
-    public static async SyncTask<bool> ApplyCurrency(
-        CraftingBase craftingBase,
-        EvaluationResult evaluationResult,
-        ItemLocation currencySource,
-        CancellationToken token)
+    public static async SyncTask<bool> ApplyCurrency(CraftingBase craftingBase, EvaluationResult evaluationResult, ItemLocation currencySource, CancellationToken token)
     {
         try
         {
@@ -105,7 +100,7 @@ public static class CraftingHandler
 
             if (currencySource == ItemLocation.PlayerInventory)
             {
-                if (!await InventoryHandler.WaitForInventoryToUpdate(PlayerInventoryHandler.PlayerInventoryServerInventory, initialServerRequestCounter, 2, token))
+                if (!await InventoryHandler.WaitForInventoryToUpdate(PlayerInventoryHandler.PlayerInventoryServerInventory, initialServerRequestCounter, token))
                 {
                     Logger.Log(LogType.Error, $"Timeout while waiting for player inventory to update.");
                     return false;
@@ -129,7 +124,7 @@ public static class CraftingHandler
                 StateHandler.CurrentlySelectedCurrency = string.Empty;
             }
 
-            await Task.Delay(StateHandler.GetServerLatency(), token);
+            await Task.Delay(StateHandler.ServerLatency, token);
             return true;
         }
         catch (OperationCanceledException)
@@ -138,10 +133,7 @@ public static class CraftingHandler
         }
     }
 
-    public static async SyncTask<bool> UseCraft(
-    EvaluationResult evaluationResult,
-    ConditionType craftType,
-    CancellationToken token = default)
+    public static async SyncTask<bool> UseCraft(EvaluationResult evaluationResult, ConditionType craftType, CancellationToken token)
     {
         try
         {
@@ -198,11 +190,7 @@ public static class CraftingHandler
             var inventory = craftType == ConditionType.HarvestBenchCraft
                             ? HarvestBenchHandler.HarvestBenchServerInventory
                             : CraftingBenchHandler.CraftingBenchServerInventory;
-            if (!await InventoryHandler.WaitForInventoryToUpdate(
-                inventory,
-                initialServerRequestCounter,
-                StateHandler.Timeout,
-                token))
+            if (!await InventoryHandler.WaitForInventoryToUpdate(inventory, initialServerRequestCounter, token))
             {
                 Logger.Log(LogType.Error, $"Timeout while waiting for server request counter to update.");
                 return false;
@@ -211,7 +199,7 @@ public static class CraftingHandler
             Tracker.Tracker.UseResource(evaluationResult.CurrencyOrCraftName);
             Logger.Log(LogType.Debug, $"Successfully used {evaluationResult.CurrencyOrCraftName}.");
 
-            await Task.Delay(StateHandler.GetServerLatency(), token);
+            await Task.Delay(StateHandler.ServerLatency, token);
             return true;
         }
         catch (OperationCanceledException)
@@ -220,7 +208,7 @@ public static class CraftingHandler
         }
     }
 
-    public static async SyncTask<bool> RemoveItemFromInventory(ServerInventory serverInventory, RectangleF rect, CancellationToken token)
+    public static async SyncTask<bool> RemoveItemFromAnInventory(ServerInventory serverInventory, RectangleF rect, CancellationToken token)
     {
         try
         {
@@ -236,7 +224,7 @@ public static class CraftingHandler
             if (!await ClickOnItemOrUI(rect, token)) return false;
 
             // Wait for the server request counter to be updated
-            if (!await InventoryHandler.WaitForInventoryToUpdate(serverInventory, initialServerRequestCounter, StateHandler.Timeout, token))
+            if (!await InventoryHandler.WaitForInventoryToUpdate(serverInventory, initialServerRequestCounter, token))
             {
                 Logger.Log(LogType.Error, $"Timeout while waiting for player inventory to update. Could not remove item.");
                 return false;
@@ -247,7 +235,7 @@ public static class CraftingHandler
 
             Logger.Log(LogType.Debug, $"Successfully removed item.");
 
-            await Task.Delay(StateHandler.GetServerLatency(), token);
+            await Task.Delay(StateHandler.ServerLatency, token);
             return true;
         }
         catch (OperationCanceledException)
@@ -275,7 +263,7 @@ public static class CraftingHandler
             if (!await Main.InputController.KeyUp(Keys.LControlKey, false, token)) return false;
 
             // Wait for the server request counter to be updated
-            if (!await InventoryHandler.WaitForInventoryToUpdate(PlayerInventoryHandler.PlayerInventoryServerInventory, initialServerRequestCounter, StateHandler.Timeout, token))
+            if (!await InventoryHandler.WaitForInventoryToUpdate(PlayerInventoryHandler.PlayerInventoryServerInventory, initialServerRequestCounter, token))
             {
                 Logger.Log(LogType.Error, $"Timeout while waiting for server request counter to update.");
                 return false;
@@ -283,7 +271,7 @@ public static class CraftingHandler
 
             Logger.Log(LogType.Debug, $"Successfully removed item from visible stash.");
 
-            await Task.Delay(StateHandler.GetServerLatency(), token);
+            await Task.Delay(StateHandler.ServerLatency, token);
             return true;
         }
         catch (OperationCanceledException)
@@ -313,7 +301,7 @@ public static class CraftingHandler
         if (!await MoveToStashIndex(endIndex, token)) return false;
 
         // Move item to end stash
-        if (!await RemoveItemFromInventory(PlayerInventoryHandler.PlayerInventoryServerInventory, craftingBase.ClientRect, token)) return false;
+        if (!await RemoveItemFromAnInventory(PlayerInventoryHandler.PlayerInventoryServerInventory, craftingBase.ClientRect, token)) return false;
 
         Logger.Log(LogType.Debug, $"Successfully move crafting base from {startIndex} to {endIndex}.");
         return true;
@@ -333,14 +321,11 @@ public static class CraftingHandler
             {
                 var initialIndex = StashHandler.CurrentVisibleStashIndex;
 
-                // If visible index is less than target index, move right
                 if (StashHandler.CurrentVisibleStashIndex < targetStashIndex)
                 {
                     if (!await Main.InputController.KeyDown(Keys.Right, token)) return false;
                     if (!await Main.InputController.KeyUp(Keys.Right, false, token)) return false;
                 }
-
-                // If visible index is greater than target index, move left
                 else
                 {
                     if (!await Main.InputController.KeyDown(Keys.Left, token)) return false;
@@ -348,11 +333,7 @@ public static class CraftingHandler
                 }
 
                 // Wait for the visible stash index to change
-                if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(
-                    () => StashHandler.CurrentVisibleStashIndex != initialIndex,
-                    StateHandler.Timeout,
-                    token
-                ))
+                if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(() => StashHandler.CurrentVisibleStashIndex != initialIndex, token))
                 {
                     Logger.Log(LogType.Error, $"Failed to move to next stash tab. Timeout while waiting for stash index to change.");
                     return false;
@@ -376,7 +357,7 @@ public static class CraftingHandler
         {
             if (!await ShiftUpIfDown(token)) return false;
 
-            if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(StateHandler.IsCursorFree, StateHandler.Timeout, token))
+            if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(StateHandler.IsCursorFree, token))
             {
                 Logger.Log(LogType.Error, $"Failed to deselect {currency}: Timeout while waiting for cursor to be free.");
                 return false;
@@ -392,15 +373,14 @@ public static class CraftingHandler
         }
     }
 
-    // This whole chain of methods relies on the fact that availability was already checked
-    // Do NOT use if availability is not checked
+    // Selecting currency relies on the fact that availability was already checked
     public static async SyncTask<bool> SelectCurrency(ServerInventory serverInventory, CraftingBase craftingBase, string currency, CancellationToken token)
     {
         var currencyLocation = InventoryHandler.GetRandomPointForClosestCurrencyInAnInventory(serverInventory, craftingBase, currency);
 
         if (!await Main.InputController.Click(MouseButtons.Right, currencyLocation, token)) return false;
 
-        if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(StateHandler.IsAnItemRightClicked, StateHandler.Timeout, token))
+        if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(StateHandler.IsAnItemRightClicked, token))
         {
             Logger.Log(LogType.Error, $"Failed to select {currency}: Timeout while waiting for currency to be right clicked.");
             return false;
@@ -417,7 +397,7 @@ public static class CraftingHandler
 
         if (!await Main.InputController.Click(MouseButtons.Right, currencyLocation, token)) return false;
 
-        if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(StateHandler.IsAnItemRightClicked, StateHandler.Timeout, token))
+        if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(StateHandler.IsAnItemRightClicked, token))
         {
             Logger.Log(LogType.Error, $"Failed to select {currency}: Timeout while waiting for currency to be right clicked.");
             return false;
@@ -470,10 +450,7 @@ public static class CraftingHandler
 
             // Wait for the search field to be filled
             if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(
-                () => HarvestBenchHandler.HarvestSearchFieldText == stringToEnter || CraftingBenchHandler.CraftingBenchSearchFieldText == stringToEnter,
-                StateHandler.Timeout,
-                token
-            ))
+                () => HarvestBenchHandler.HarvestSearchFieldText == stringToEnter || CraftingBenchHandler.CraftingBenchSearchFieldText == stringToEnter, token))
             {
                 Logger.Log(LogType.Error, $"Failed to enter \"{stringToEnter}\" in the search field.");
                 return false;

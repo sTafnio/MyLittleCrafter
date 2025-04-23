@@ -45,14 +45,12 @@ public class CraftingBase
         switch (ItemLocation)
         {
             case ItemLocation.PlayerInventory:
-                // Wait for a valid item to be available in player inventory
                 if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(
                     () =>
                     {
                         var item = PlayerInventoryHandler.GetInventSlotItemFromClientRectInPlayerInventory(ClientRect);
                         return item != null && item.Item != null;
                     },
-                    StateHandler.Timeout,
                     token))
                 {
                     Logger.Log(LogType.Error, "UpdateItemData: Timeout waiting for craftable item in player inventory.");
@@ -63,14 +61,12 @@ public class CraftingBase
                 break;
 
             case ItemLocation.HarvestBench:
-                // Wait for a valid item to be available in harvest bench
                 if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(
                     () =>
                     {
                         var item = HarvestBenchHandler.InventSlotItemInHarvestBench;
                         return item != null && item.Item != null;
                     },
-                    StateHandler.Timeout,
                     token))
                 {
                     Logger.Log(LogType.Error, "UpdateItemData: Timeout waiting for craftable item in harvest bench.");
@@ -81,14 +77,12 @@ public class CraftingBase
                 break;
 
             case ItemLocation.CraftingBench:
-                // Wait for a valid item to be available in crafting bench
                 if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(
                     () =>
                     {
                         var item = CraftingBenchHandler.InventSlotItemInCraftingBench;
                         return item != null && item.Item != null;
                     },
-                    StateHandler.Timeout,
                     token))
                 {
                     Logger.Log(LogType.Error, "UpdateItemData: Timeout waiting for craftable item in crafting bench.");
@@ -99,14 +93,12 @@ public class CraftingBase
                 break;
 
             case ItemLocation.CurrencyStash:
-                // Wait for a valid item to be available in the currency stash
                 if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(
                     () =>
                     {
                         var item = StashHandler.GetFirstCraftableItemInVisibleStash();
                         return item != null && item.Item != null;
                     },
-                    StateHandler.Timeout,
                     token))
                 {
                     Logger.Log(LogType.Error, "UpdateItemData: Timeout waiting for craftable item in currency stash.");

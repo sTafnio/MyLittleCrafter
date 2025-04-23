@@ -26,7 +26,7 @@ public static class HarvestCraftingManager
                     if (HarvestBenchHandler.InventSlotItemInHarvestBench != null)
                     {
                         Logger.Log(LogType.Debug, "Item in harvest bench is not a valid crafting base. Need to remove it.");
-                        if (!await CraftingHandler.RemoveItemFromInventory(HarvestBenchHandler.HarvestBenchServerInventory, HarvestBenchHandler.ItemInHarvestBenchRect, token)) return false;
+                        if (!await CraftingHandler.RemoveItemFromAnInventory(HarvestBenchHandler.HarvestBenchServerInventory, HarvestBenchHandler.ItemInHarvestBenchRect, token)) return false;
                     }
                 }
 
@@ -37,7 +37,7 @@ public static class HarvestCraftingManager
                     // If the item is not in the harvest bench, move it to the harvest bench
                     if (craftingBase.ItemLocation != ItemLocation.HarvestBench)
                     {
-                        if (!await CraftingHandler.RemoveItemFromInventory(PlayerInventoryHandler.PlayerInventoryServerInventory, craftingBase.ClientRect, token)) return false;
+                        if (!await CraftingHandler.RemoveItemFromAnInventory(PlayerInventoryHandler.PlayerInventoryServerInventory, craftingBase.ClientRect, token)) return false;
                         craftingBase.OnMovedToHarvestBench();
                     }
 
@@ -48,7 +48,7 @@ public static class HarvestCraftingManager
                     {
                         Tracker.Tracker.FinishItem();
                         Logger.Log(LogType.CraftingState, $"Item {itemIndex} is finished.");
-                        if (!await CraftingHandler.RemoveItemFromInventory(HarvestBenchHandler.HarvestBenchServerInventory, craftingBase.ClientRect, token)) return false;
+                        if (!await CraftingHandler.RemoveItemFromAnInventory(HarvestBenchHandler.HarvestBenchServerInventory, craftingBase.ClientRect, token)) return false;
                         break;
                     }
 

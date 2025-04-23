@@ -1,6 +1,6 @@
 // This is an example file for a harvest craft using currency and the harvest bench.
 // All rules from ExampleCurrencyCraft.craft apply.
-// Only Reforge is support, e.g. "Reforge Cold" or "Reforge Lightning".
+// Only Reforge is supported, e.g. "Reforge Cold" or "Reforge Lightning".
 // Reforge harvest crafts are indicated by the "Reforge" prefix in the header.
 // Do not manually select or de-select any harvest crafts. If something fails, just open the bench again.
 // The item in the bench when crafting starts is considered a potential crafting base.

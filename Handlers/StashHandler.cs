@@ -114,6 +114,6 @@ public static class StashHandler
         return await ExecuteHandler.AsyncExecuteWithCancellationHandling(() =>
         {
             return CurrencyStashServerRequestCounter != initialServerRequestCounter;
-        }, timeoutS, token);
+        }, token);
     }
 }

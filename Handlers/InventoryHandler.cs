@@ -30,12 +30,6 @@ public static class InventoryHandler
     public static ServerInventory GetServerInventoryFromInventorySlotE(InventorySlotE invSlot) =>
         Main?.GameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)invSlot]?.Inventory;
 
-    public static List<InventSlotItem> GetAllInventSlotItemsFromServerInventory(ServerInventory serverInventory) =>
-        serverInventory.InventorySlotItems
-            .OrderBy(item => item.PosX)
-            .ThenBy(item => item.PosY)
-            .ToList();
-
     public static List<InventSlotItem> GetAllSpecificCurrencyFromServerInventory(ServerInventory serverInventory, string currency) =>
         serverInventory.InventorySlotItems
             .Where(item => item.Item != null && item.Item.TryGetComponent<Base>(out var baseI) && baseI.Name == currency)
@@ -47,13 +41,13 @@ public static class InventoryHandler
         return counter;
     }
 
-    public static async SyncTask<bool> WaitForInventoryToUpdate(ServerInventory serverInventory, int initialServerRequestCounter, int timeoutS, CancellationToken token)
+    public static async SyncTask<bool> WaitForInventoryToUpdate(ServerInventory serverInventory, int initialServerRequestCounter, CancellationToken token)
     {
         return await ExecuteHandler.AsyncExecuteWithCancellationHandling(() =>
         {
             var serverRequestCounter = GetServerRequestCounterForServerInventory(serverInventory);
             return serverRequestCounter != initialServerRequestCounter;
-        }, timeoutS, token);
+        }, token);
     }
 
     public static Vector2 GetRandomPointForClosestCurrencyInAnInventory(ServerInventory serverInventory, CraftingBase craftingBase, string currency)
