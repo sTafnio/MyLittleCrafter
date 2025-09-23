@@ -45,8 +45,7 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
     public override bool Initialise()
     {
         Main = this;
-
-        RegisterHotkey(Settings.General.ToggleButton);
+        RegisterHotkey(Settings.General.ToggleButton.Value);
 
         keysToRelease = [Keys.LButton, Keys.RButton, Keys.LControlKey, Keys.LShiftKey, Keys.F, Keys.V, Keys.Left, Keys.Right];
         foreach (var key in keysToRelease) Input.RegisterKey(key);
@@ -106,10 +105,10 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
         Logger.Log(LogType.Info, $"Updated available craft files.");
     }
 
-    private static void RegisterHotkey(HotkeyNode hotkey)
+    private static void RegisterHotkey(HotkeyNodeV2 hotkey)
     {
-        Input.RegisterKey(hotkey);
-        hotkey.OnValueChanged += () => Input.RegisterKey(hotkey);
+        Input.RegisterKey(hotkey.Value);
+        hotkey.OnValueChanged += () => Input.RegisterKey(hotkey.Value);
     }
 
 
