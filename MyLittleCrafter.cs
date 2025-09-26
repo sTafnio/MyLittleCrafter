@@ -91,6 +91,10 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
             Logger.Log(LogType.Info, "NinjaPrice plugin bridge not found. NinjaPrice integration will be disabled.");
         }
 
+        PluginBridge.SaveMethod("MyLittleCrafter.Start", (Action)Start);
+        PluginBridge.SaveMethod("MyLittleCrafter.Stop", (Action)Stop);
+
+
         return true;
     }
 
@@ -131,9 +135,7 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
             }
             else
             {
-                ItemsToCraftOnList = [];
-                ResetCancellationTokenSource();
-                CurrentOperation = CraftingStart(OperationCts.Token);
+                Start();
             }
         }
 
@@ -142,6 +144,14 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
         return null;
     }
 
+
+    public void Start()
+    {
+        ItemsToCraftOnList = [];
+        ResetCancellationTokenSource();
+        CurrentOperation = CraftingStart(OperationCts.Token);
+    }
+    
     public void Stop()
     {
         CurrentOperation = null;
