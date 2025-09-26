@@ -154,6 +154,9 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
     
     public void Stop()
     {
+        if (CurrentOperation == null)
+            return;
+            
         CurrentOperation = null;
 
         foreach (var key in keysToRelease.Where(Input.IsKeyDown)) Input.KeyUp(key);
