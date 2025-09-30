@@ -1,17 +1,3 @@
-// UpdateAvailableCraftFiles();
-
-//         Settings.FileOptions.SelectedCraftingFile.OnValueSelected += (fileName) =>
-//         {
-//             _ = FileHandler.LoadCraftingFileAsync(fileName);
-//         };
-
-// if (!string.IsNullOrEmpty(Settings.FileOptions.SelectedCraftingFile))
-// {
-//     _ = FileHandler.LoadCraftingFileAsync(Settings.FileOptions.SelectedCraftingFile);
-// }
-
-
-
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
