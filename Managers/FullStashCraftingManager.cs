@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ExileCore.Shared;
 using MyLittleCrafter.Handlers;
-using static MyLittleCrafter.Enums.MyLittleCrafter;
+using MyLittleCrafter.Enums;
 using static MyLittleCrafter.MyLittleCrafter;
 
 namespace MyLittleCrafter.Managers;
@@ -53,7 +53,7 @@ public static class FullStashCraftingManager
                     if (craftingBase.ItemLocation == ItemLocation.InputStash)
                     {
                         if (!await CraftingHandler.MoveItemFromTo(craftingBase, StashHandler.InputStashIndex, StashHandler.CurrencyStashIndex, token)) return false;
-                        craftingBase.OnMovedToCurrencyStash();
+                        if (!craftingBase.OnMovedToCurrencyStash()) return false; // Stop if invalid transition
                     }
 
                     // If finished, move it from currency stash to output stash
@@ -63,6 +63,7 @@ public static class FullStashCraftingManager
                         Tracker.Tracker.FinishItem();
                         Logger.Log(LogType.CraftingState, $"Item {itemIndex} is finished.");
                         if (!await CraftingHandler.MoveItemFromTo(craftingBase, StashHandler.CurrencyStashIndex, StashHandler.OutputStashIndex, token)) return false;
+                        if (!craftingBase.OnMovedToOutputStash()) return false; // Stop if invalid transition
                         break;
                     }
 

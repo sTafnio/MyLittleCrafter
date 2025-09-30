@@ -1,12 +1,9 @@
 namespace MyLittleCrafter.Enums;
 
-public partial class MyLittleCrafter
+public enum ConditionType
 {
-    public enum ConditionType
-    {
-        Global,
-        StackableCurrencyUse,
-        CraftingBenchCraft,
-        HarvestBenchCraft,
-    }
+    Global,
+    StackableCurrencyUse,
+    CraftingBenchCraft,
+    HarvestBenchCraft,
 }

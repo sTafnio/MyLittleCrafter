@@ -1,13 +1,10 @@
 namespace MyLittleCrafter.Enums;
 
-public partial class MyLittleCrafter
+public enum LogType
 {
-    public enum LogType
-    {
-        Error,
-        Info,
-        CraftingState,
-        Success,
-        Debug,
-    }
+    Error,
+    Info,
+    CraftingState,
+    Success,
+    Debug,
 }

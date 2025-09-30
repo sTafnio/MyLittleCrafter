@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using static MyLittleCrafter.Enums.MyLittleCrafter;
+using MyLittleCrafter.Enums;
 using static MyLittleCrafter.MyLittleCrafter;
 using MyLittleCrafter.Tracker;
 

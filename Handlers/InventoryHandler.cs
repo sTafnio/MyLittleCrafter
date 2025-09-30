@@ -6,10 +6,9 @@ using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared;
 using ExileCore.Shared.Enums;
 using MyLittleCrafter.Items;
-using SharpDX;
 using Vector2 = System.Numerics.Vector2;
 using static ExileCore.PoEMemory.MemoryObjects.ServerInventory;
-using static MyLittleCrafter.Enums.MyLittleCrafter;
+using MyLittleCrafter.Enums;
 using static MyLittleCrafter.MyLittleCrafter;
 
 namespace MyLittleCrafter.Handlers;
@@ -43,11 +42,17 @@ public static class InventoryHandler
 
     public static async SyncTask<bool> WaitForInventoryToUpdate(ServerInventory serverInventory, int initialServerRequestCounter, CancellationToken token)
     {
-        return await ExecuteHandler.AsyncExecuteWithCancellationHandling(() =>
+        Logger.Log(LogType.Info, $"[TRACE] WaitForInventoryToUpdate called. Initial: {initialServerRequestCounter}");
+        
+        var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(() =>
         {
             var serverRequestCounter = GetServerRequestCounterForServerInventory(serverInventory);
+            Logger.Log(LogType.Info, $"[TRACE] WaitForInventoryToUpdate checking: Current={serverRequestCounter}, Initial={initialServerRequestCounter}, Different={serverRequestCounter != initialServerRequestCounter}");
             return serverRequestCounter != initialServerRequestCounter;
         }, token);
+        
+        Logger.Log(LogType.Info, $"[TRACE] WaitForInventoryToUpdate result: {result}");
+        return result;
     }
 
     public static Vector2 GetRandomPointForClosestCurrencyInAnInventory(ServerInventory serverInventory, CraftingBase craftingBase, string currency)

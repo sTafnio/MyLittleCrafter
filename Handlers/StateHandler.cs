@@ -5,7 +5,7 @@ using ExileCore.PoEMemory;
 using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared.Enums;
 using SharpDX;
-using static MyLittleCrafter.Enums.MyLittleCrafter;
+using MyLittleCrafter.Enums;
 using static MyLittleCrafter.MyLittleCrafter;
 
 namespace MyLittleCrafter.Handlers;
@@ -17,10 +17,10 @@ public static class StateHandler
     public static bool IsInGame => Main?.GameController?.Game?.IngameState?.InGame ?? false;
     public static bool IsGameFocused => Main?.GameController?.Window?.IsForeground() ?? false;
     public static int Timeout => ServerLatency * 100;
-    public static List<string> RequiredCurrenciesForSelectedCraft => Main.CurrentCraftingConditionsList
+    public static List<string> RequiredCurrenciesForSelectedCraft => Main.CurrentCraftingFile?.CraftingConditions
         .Where(condition => condition.ConditionType == ConditionType.StackableCurrencyUse)
-        .Select(condition => condition.Header)
-        .ToList();
+        .Select(condition => condition.Type)
+        .ToList() ?? new List<string>();
 
     public static bool IsInGameUiElementVisible(Func<IngameUIElements, Element> panelSelector) =>
         panelSelector(Main?.GameController?.Game?.IngameState?.IngameUi)?.IsVisible ?? false;

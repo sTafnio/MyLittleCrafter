@@ -1,0 +1,52 @@
+{
+  "Name": "Query Formats Example",
+  "Description": "Demonstrates different ways to write queries: strings, explicit Or/And objects, and nested structures",
+  "ItemSelection": "Rarity == ItemRarity.Rare",
+  "Conditions": [
+    {
+      "Type": "Orb of Scouring",
+      "Query": "ModsInfo.ExplicitMods.Count() > 5",
+      "UseShift": false,
+      "_comment": "Simple query - just a string"
+    },
+    {
+      "Type": "Chaos Orb",
+      "Query": {
+        "Or": [
+          "new[] {ModsInfo.ExplicitMods.Any(Name == \"IncreasedLife\")}.Count(x => x) < 1",
+          "new[] {ModsInfo.ExplicitMods.Any(Name == \"FireResist\"), ModsInfo.ExplicitMods.Any(Name == \"ColdResist\")}.Count(x => x) < 1"
+        ]
+      },
+      "UseShift": true,
+      "_comment": "Explicit OR - use when no life OR no resists"
+    },
+    {
+      "Type": "Orb of Augmentation",
+      "Query": {
+        "And": [
+          "Rarity == ItemRarity.Magic",
+          "ItemLevel >= 75",
+          "ModsInfo.OpenPrefixCount >= 1"
+        ]
+      },
+      "UseShift": false,
+      "_comment": "Explicit AND - all conditions must be true"
+    },
+    {
+      "Type": "Orb of Alchemy",
+      "Query": {
+        "Or": [
+          "Rarity == ItemRarity.Normal",
+          {
+            "And": [
+              "Rarity == ItemRarity.Magic",
+              "ModsInfo.ExplicitMods.Count() < 2"
+            ]
+          }
+        ]
+      },
+      "UseShift": false,
+      "_comment": "Nested structure - Normal items OR (Magic items with less than 2 mods)"
+    }
+  ]
+}

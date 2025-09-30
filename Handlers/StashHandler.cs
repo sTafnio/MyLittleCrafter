@@ -6,7 +6,7 @@ using System.Linq;
 using static MyLittleCrafter.MyLittleCrafter;
 using static ExileCore.PoEMemory.MemoryObjects.ServerInventory;
 using ExileCore.PoEMemory.Components;
-using static MyLittleCrafter.Enums.MyLittleCrafter;
+using MyLittleCrafter.Enums;
 using ExileCore.PoEMemory.Elements.InventoryElements;
 using ExileCore.PoEMemory.MemoryObjects;
 using System.Threading;

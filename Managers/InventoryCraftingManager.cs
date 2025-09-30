@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using ExileCore.Shared;
 using MyLittleCrafter.Handlers;
-using static MyLittleCrafter.Enums.MyLittleCrafter;
+using MyLittleCrafter.Enums;
 using static MyLittleCrafter.MyLittleCrafter;
 
 namespace MyLittleCrafter.Managers;

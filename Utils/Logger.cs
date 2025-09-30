@@ -1,5 +1,5 @@
 using SharpDX;
-using static MyLittleCrafter.Enums.MyLittleCrafter;
+using MyLittleCrafter.Enums;
 using static MyLittleCrafter.MyLittleCrafter;
 
 namespace MyLittleCrafter;

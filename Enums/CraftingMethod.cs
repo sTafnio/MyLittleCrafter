@@ -1,13 +1,10 @@
 namespace MyLittleCrafter.Enums;
 
-public partial class MyLittleCrafter
+public enum CraftingMethod
 {
-    public enum CraftingMethod
-    {
-        None,
-        Inventory,
-        CraftingBench,
-        HarvestBench,
-        FullStash
-    }
+    None,
+    Inventory,
+    CraftingBench,
+    HarvestBench,
+    FullStash
 }

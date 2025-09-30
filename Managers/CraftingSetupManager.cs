@@ -4,7 +4,7 @@ using ExileCore.Shared.Enums;
 using MyLittleCrafter.Handlers;
 using MyLittleCrafter.Items;
 using static ExileCore.PoEMemory.MemoryObjects.ServerInventory;
-using static MyLittleCrafter.Enums.MyLittleCrafter;
+using MyLittleCrafter.Enums;
 using static MyLittleCrafter.MyLittleCrafter;
 
 namespace MyLittleCrafter.Managers;
@@ -86,8 +86,15 @@ public static class CraftingSetupManager
             return false;
         }
 
+        // Check if crafting file is loaded
+        if (Main.CurrentCraftingFile == null)
+        {
+            Logger.Log(LogType.Error, "No crafting file loaded.");
+            return false;
+        }
+
         // Check if any crafting conditions exist
-        if (Main.CurrentCraftingConditionsList.Count == 0)
+        if (Main.CurrentCraftingFile.CraftingConditions == null || Main.CurrentCraftingFile.CraftingConditions.Count == 0)
         {
             Logger.Log(LogType.Error, "No crafting conditions exist.");
             return false;
@@ -109,7 +116,7 @@ public static class CraftingSetupManager
         {
             // Inventory and Full Stash can only have Stackable Currency Use and Global conditions
             case CraftingMethod.Inventory or CraftingMethod.FullStash:
-                isValid = Main.CurrentCraftingConditionsList.All(condition =>
+                isValid = Main.CurrentCraftingFile.GetAllConditions().All(condition =>
                     condition.ConditionType == ConditionType.StackableCurrencyUse || condition.ConditionType == ConditionType.Global);
                 if (!isValid)
                 {
@@ -120,7 +127,7 @@ public static class CraftingSetupManager
 
             // Crafting Bench can only have Stackable Currency Use, Harvest Bench Craft and Global conditions
             case CraftingMethod.CraftingBench:
-                isValid = Main.CurrentCraftingConditionsList.All(condition =>
+                isValid = Main.CurrentCraftingFile.GetAllConditions().All(condition =>
                     condition.ConditionType == ConditionType.StackableCurrencyUse || condition.ConditionType == ConditionType.CraftingBenchCraft || condition.ConditionType == ConditionType.Global);
                 if (!isValid)
                 {
@@ -131,7 +138,7 @@ public static class CraftingSetupManager
 
             // Harvest Bench can only have Stackable Currency Use, Harvest Bench Craft and Global conditions
             case CraftingMethod.HarvestBench:
-                isValid = Main.CurrentCraftingConditionsList.All(condition =>
+                isValid = Main.CurrentCraftingFile.GetAllConditions().All(condition =>
                     condition.ConditionType == ConditionType.StackableCurrencyUse || condition.ConditionType == ConditionType.HarvestBenchCraft || condition.ConditionType == ConditionType.Global);
                 if (!isValid)
                 {

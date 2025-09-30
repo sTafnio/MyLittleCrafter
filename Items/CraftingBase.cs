@@ -1,145 +1,202 @@
+using System;
+using System.Threading;
 using ExileCore.PoEMemory.MemoryObjects;
+using ExileCore.Shared;
 using ItemFilterLibrary;
+using MyLittleCrafter.Enums;
 using MyLittleCrafter.Handlers;
 using SharpDX;
 using static ExileCore.PoEMemory.MemoryObjects.ServerInventory;
-using static MyLittleCrafter.Enums.MyLittleCrafter;
 using static MyLittleCrafter.MyLittleCrafter;
-using System.Threading;
-using ExileCore.Shared;
 
 namespace MyLittleCrafter.Items;
 
+/// <summary>
+/// Represents a craftable item with its location and data.
+/// Tracks the item as it moves between different locations (inventory, benches, stash).
+/// Uses a state machine to enforce valid location transitions.
+/// </summary>
 public class CraftingBase
 {
+    private readonly CraftingBaseStateMachine _stateMachine;
+    private IItemLocationHandler _currentHandler;
+
     public ItemData ItemData { get; set; }
-    public ItemLocation ItemLocation { get; set; }
-    public RectangleF ClientRect { get; set; }
+    public ItemLocation ItemLocation => _stateMachine.CurrentLocation;
+    public RectangleF ClientRect { get; internal set; }
 
     public CraftingBase(InventSlotItem inventSlotItem, ItemLocation itemLocation)
     {
         ItemData = new ItemData(inventSlotItem.Item, Main.GameController);
-        ItemLocation = itemLocation;
+        _stateMachine = new CraftingBaseStateMachine(itemLocation);
+        _currentHandler = ItemLocationHandlerFactory.GetHandler(itemLocation);
 
-        switch (itemLocation)
+        // Set initial client rect based on location
+        ClientRect = itemLocation switch
         {
-            case ItemLocation.PlayerInventory:
-                ClientRect = inventSlotItem.GetClientRect();
-                break;
-            case ItemLocation.HarvestBench:
-                ClientRect = HarvestBenchHandler.ItemInHarvestBenchRect;
-                break;
-            case ItemLocation.CraftingBench:
-                ClientRect = CraftingBenchHandler.ItemInCraftingBenchRect;
-                break;
-            case ItemLocation.InputStash:
-                ClientRect = StashHandler.GetClientRectForInventSlotItemInInputStash(inventSlotItem);
-                break;
-        }
+            ItemLocation.PlayerInventory => inventSlotItem.GetClientRect(),
+            ItemLocation.InputStash => StashHandler.GetClientRectForInventSlotItemInInputStash(inventSlotItem),
+            _ => _currentHandler.GetStandardRect()
+        };
     }
 
     public async SyncTask<bool> UpdateItemDataAsync(CancellationToken token)
     {
+        Logger.Log(LogType.Info, $"[TRACE] UpdateItemDataAsync called. ItemLocation: {ItemLocation}, ClientRect: {ClientRect}");
         Entity newItem;
 
-        switch (ItemLocation)
+        // Special handling for CurrencyStash due to NormalInventoryItem type
+        if (ItemLocation == ItemLocation.CurrencyStash)
         {
-            case ItemLocation.PlayerInventory:
-                if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(
-                    () =>
-                    {
-                        var item = PlayerInventoryHandler.GetInventSlotItemFromClientRectInPlayerInventory(ClientRect);
-                        return item != null && item.Item != null;
-                    },
-                    token))
-                {
-                    Logger.Log(LogType.Error, "UpdateItemData: Timeout waiting for craftable item in player inventory.");
-                    return false;
-                }
-
-                newItem = PlayerInventoryHandler.GetInventSlotItemFromClientRectInPlayerInventory(ClientRect).Item;
-                break;
-
-            case ItemLocation.HarvestBench:
-                if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(
-                    () =>
-                    {
-                        var item = HarvestBenchHandler.InventSlotItemInHarvestBench;
-                        return item != null && item.Item != null;
-                    },
-                    token))
-                {
-                    Logger.Log(LogType.Error, "UpdateItemData: Timeout waiting for craftable item in harvest bench.");
-                    return false;
-                }
-
-                newItem = HarvestBenchHandler.InventSlotItemInHarvestBench.Item;
-                break;
-
-            case ItemLocation.CraftingBench:
-                if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(
-                    () =>
-                    {
-                        var item = CraftingBenchHandler.InventSlotItemInCraftingBench;
-                        return item != null && item.Item != null;
-                    },
-                    token))
-                {
-                    Logger.Log(LogType.Error, "UpdateItemData: Timeout waiting for craftable item in crafting bench.");
-                    return false;
-                }
-
-                newItem = CraftingBenchHandler.InventSlotItemInCraftingBench.Item;
-                break;
-
-            case ItemLocation.CurrencyStash:
-                if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(
-                    () =>
-                    {
-                        var item = StashHandler.GetFirstCraftableItemInVisibleStash();
-                        return item != null && item.Item != null;
-                    },
-                    token))
-                {
-                    Logger.Log(LogType.Error, "UpdateItemData: Timeout waiting for craftable item in currency stash.");
-                    return false;
-                }
-
-                var inventSlotItem = StashHandler.GetFirstCraftableItemInVisibleStash();
-                newItem = inventSlotItem.Item;
-                break;
-
-            default:
-                Logger.Log(LogType.Error, $"UpdateItemData: Invalid ItemLocation value: {ItemLocation}");
+            Logger.Log(LogType.Info, $"[TRACE] UpdateItemDataAsync: CurrencyStash path - waiting for item");
+            if (!await _currentHandler.WaitForItem(ClientRect, token))
+            {
+                Logger.Log(LogType.Error, $"UpdateItemData: Timeout waiting for craftable item in {ItemLocation}.");
                 return false;
+            }
+
+            var inventoryItem = StashHandler.GetFirstCraftableItemInVisibleStash();
+            newItem = inventoryItem.Item;
+        }
+        else
+        {
+            Logger.Log(LogType.Info, $"[TRACE] UpdateItemDataAsync: Standard path - waiting for item at {ItemLocation}");
+            // Standard handling using handler interface
+            if (!await _currentHandler.WaitForItem(ClientRect, token))
+            {
+                Logger.Log(LogType.Error, $"UpdateItemData: Timeout waiting for craftable item in {ItemLocation}.");
+                return false;
+            }
+
+            Logger.Log(LogType.Info, $"[TRACE] UpdateItemDataAsync: WaitForItem succeeded, getting item");
+            var item = _currentHandler.GetItem(ClientRect);
+            if (item == null)
+            {
+                Logger.Log(LogType.Error, $"UpdateItemData: Item not found at {ItemLocation}.");
+                return false;
+            }
+
+            newItem = item.Item;
+        }
+
+        if (newItem == null)
+        {
+            Logger.Log(LogType.Error, $"UpdateItemData: Entity is null at {ItemLocation}.");
+            return false;
         }
 
         ItemData = new ItemData(newItem, Main.GameController);
-        Logger.Log(LogType.Debug, $"Successfully updated item data.");
+        Logger.Log(LogType.Info, $"[TRACE] UpdateItemDataAsync: Successfully updated item data at {ItemLocation}.");
         return true;
     }
 
-    public void OnMovedToHarvestBench()
+    /// <summary>
+    /// Moves the item to a new location with state machine validation
+    /// </summary>
+    private bool TransitionTo(ItemLocation targetLocation)
     {
-        ItemLocation = ItemLocation.HarvestBench;
-        ClientRect = HarvestBenchHandler.ItemInHarvestBenchRect;
+        if (!_stateMachine.TryTransitionTo(targetLocation, out var errorMessage))
+        {
+            Logger.Log(LogType.Error, $"Invalid state transition: {errorMessage}");
+            return false;
+        }
+
+        _currentHandler = ItemLocationHandlerFactory.GetHandler(targetLocation);
+        return true;
     }
 
-    public void OnMovedToCraftingBench()
+    /// <summary>
+    /// Updates the location and rect when the item is moved to the harvest bench
+    /// </summary>
+    /// <returns>True if transition was successful, false if invalid (should stop crafting)</returns>
+    public bool OnMovedToHarvestBench()
     {
-        ItemLocation = ItemLocation.CraftingBench;
-        ClientRect = CraftingBenchHandler.ItemInCraftingBenchRect;
+        if (!TransitionTo(ItemLocation.HarvestBench))
+        {
+            Logger.Log(LogType.Error, $"Cannot move to HarvestBench from {ItemLocation}. Stopping crafting.");
+            return false;
+        }
+
+        ClientRect = _currentHandler.GetStandardRect();
+        return true;
     }
 
-    public void OnMovedToCurrencyStash()
+    /// <summary>
+    /// Updates the location and rect when the item is moved to the crafting bench
+    /// </summary>
+    /// <returns>True if transition was successful, false if invalid (should stop crafting)</returns>
+    public bool OnMovedToCraftingBench()
     {
-        ItemLocation = ItemLocation.CurrencyStash;
-        ClientRect = StashHandler.GetFirstCraftableItemInVisibleStash().GetClientRect();
+        if (!TransitionTo(ItemLocation.CraftingBench))
+        {
+            Logger.Log(LogType.Error, $"Cannot move to CraftingBench from {ItemLocation}. Stopping crafting.");
+            return false;
+        }
+
+        ClientRect = _currentHandler.GetStandardRect();
+        return true;
     }
 
-    public void OnMovedToPlayerInventory(InventSlotItem inventSlotItem)
+    /// <summary>
+    /// Updates the location and rect when the item is moved to the currency stash
+    /// </summary>
+    /// <returns>True if transition was successful, false if invalid (should stop crafting)</returns>
+    public bool OnMovedToCurrencyStash()
     {
-        ItemLocation = ItemLocation.PlayerInventory;
+        if (!TransitionTo(ItemLocation.CurrencyStash))
+        {
+            Logger.Log(LogType.Error, $"Cannot move to CurrencyStash from {ItemLocation}. Stopping crafting.");
+            return false;
+        }
+
+        var firstItem = StashHandler.GetFirstCraftableItemInVisibleStash();
+        if (firstItem == null)
+        {
+            Logger.Log(LogType.Error, "OnMovedToCurrencyStash: No craftable item found in stash.");
+            return false;
+        }
+
+        ClientRect = firstItem.GetClientRect();
+        return true;
+    }
+
+    /// <summary>
+    /// Updates the location and rect when the item is moved to player inventory
+    /// </summary>
+    /// <returns>True if transition was successful, false if invalid (should stop crafting)</returns>
+    public bool OnMovedToPlayerInventory(InventSlotItem inventSlotItem)
+    {
+        if (inventSlotItem == null)
+        {
+            Logger.Log(LogType.Error, "OnMovedToPlayerInventory: InventSlotItem is null.");
+            return false;
+        }
+
+        if (!TransitionTo(ItemLocation.PlayerInventory))
+        {
+            Logger.Log(LogType.Error, $"Cannot move to PlayerInventory from {ItemLocation}. Stopping crafting.");
+            return false;
+        }
+
         ClientRect = inventSlotItem.GetClientRect();
+        return true;
+    }
+
+    /// <summary>
+    /// Updates the location when the item is moved to output stash (finished crafting)
+    /// </summary>
+    /// <returns>True if transition was successful, false if invalid (should stop crafting)</returns>
+    public bool OnMovedToOutputStash()
+    {
+        if (!TransitionTo(ItemLocation.OutputStash))
+        {
+            Logger.Log(LogType.Error, $"Cannot move to OutputStash from {ItemLocation}. Stopping crafting.");
+            return false;
+        }
+
+        // No client rect needed - item is finished and won't be retrieved again
+        ClientRect = RectangleF.Empty;
+        Logger.Log(LogType.Info, "Item moved to OutputStash - crafting complete.");
+        return true;
     }
 }

@@ -1,4 +1,18 @@
-﻿using System.Collections.Generic;
+// UpdateAvailableCraftFiles();
+
+//         Settings.FileOptions.SelectedCraftingFile.OnValueSelected += (fileName) =>
+//         {
+//             _ = FileHandler.LoadCraftingFileAsync(fileName);
+//         };
+
+// if (!string.IsNullOrEmpty(Settings.FileOptions.SelectedCraftingFile))
+// {
+//     _ = FileHandler.LoadCraftingFileAsync(Settings.FileOptions.SelectedCraftingFile);
+// }
+
+
+
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -13,10 +27,10 @@ using MyLittleCrafter.Managers;
 using MyLittleCrafter.Items;
 using System.Threading.Tasks;
 using InputHumanizer.Input;
-using static MyLittleCrafter.Enums.MyLittleCrafter;
 using Vector2N = System.Numerics.Vector2;
 using ExileCore.Shared.Helpers;
 using ExileCore.PoEMemory.Models;
+using MyLittleCrafter.Enums;
 
 namespace MyLittleCrafter;
 
@@ -32,6 +46,7 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
     private List<Keys> keysToRelease = [];
     private List<string> availableCraftFilesList = [];
     public List<CraftCondition> CurrentCraftingConditionsList = [];
+    public CraftingFile CurrentCraftingFile = null;
     public List<CraftingBase> ItemsToCraftOnList = [];
     public PluginBridge PluginBridge;
 
@@ -52,11 +67,14 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
 
         UpdateAvailableCraftFiles();
 
-        Settings.FileOptions.SelectedCraftingFile.OnValueSelected += FileHandler.LoadCraftingFile;
+        Settings.FileOptions.SelectedCraftingFile.OnValueSelected += (fileName) =>
+        {
+            _ = FileHandler.LoadCraftingFileAsync(fileName);
+        };
 
         if (!string.IsNullOrEmpty(Settings.FileOptions.SelectedCraftingFile))
         {
-            FileHandler.LoadCraftingFile(Settings.FileOptions.SelectedCraftingFile);
+            _ = FileHandler.LoadCraftingFileAsync(Settings.FileOptions.SelectedCraftingFile);
         }
 
         Settings.DiscordNotifications.TestWebhook.OnPressed += () =>
@@ -101,12 +119,13 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
     public void UpdateAvailableCraftFiles()
     {
         availableCraftFilesList = new DirectoryInfo(ConfigDirectory)
-            .GetFiles("*.craft")
+            .GetFiles("*.json")
             .Select(x => Path.GetFileNameWithoutExtension(x.Name))
+            .OrderBy(x => x)
             .ToList();
 
         Settings.FileOptions.SelectedCraftingFile.SetListValues(availableCraftFilesList);
-        Logger.Log(LogType.Info, $"Updated available craft files.");
+        Logger.Log(LogType.Info, $"Updated available craft files (found {availableCraftFilesList.Count} JSON files).");
     }
 
     private static void RegisterHotkey(HotkeyNodeV2 hotkey)
@@ -151,12 +170,12 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
         ResetCancellationTokenSource();
         CurrentOperation = CraftingStart(OperationCts.Token);
     }
-    
+
     public void Stop()
     {
         if (CurrentOperation == null)
             return;
-            
+
         CurrentOperation = null;
 
         foreach (var key in keysToRelease.Where(Input.IsKeyDown)) Input.KeyUp(key);

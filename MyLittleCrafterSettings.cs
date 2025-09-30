@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -10,7 +10,7 @@ using ExileCore.Shared.Nodes;
 using ImGuiNET;
 using Newtonsoft.Json;
 using MyLittleCrafter.Handlers;
-using static MyLittleCrafter.Enums.MyLittleCrafter;
+using MyLittleCrafter.Enums;
 using static MyLittleCrafter.MyLittleCrafter;
 using MyLittleCrafter.Tracker;
 using ExileCore;
@@ -97,7 +97,7 @@ public class FileSelectionOptions
             ImGui.SameLine();
             if (ImGui.Button("Reload"))
             {
-                FileHandler.LoadCraftingFile(SelectedCraftingFile);
+                _ = FileHandler.LoadCraftingFileAsync(SelectedCraftingFile);
             }
 
             ImGui.SameLine();
@@ -207,18 +207,30 @@ public class SelectedCraftFileDisplay
         {
             if (Main == null) return;
 
-            if (Main.CurrentCraftingConditionsList.Count > 0)
+            if (Main.CurrentCraftingFile != null)
             {
-                foreach (var filter in Main.CurrentCraftingConditionsList)
+                // Display file info
+                if (!string.IsNullOrEmpty(Main.CurrentCraftingFile.Name))
                 {
-                    ImGui.TextColored(new Vector4(0f, 1f, 0.022f, 1f), filter.Header + (filter.UseShift ? " - Shift" : string.Empty));
+                    ImGui.TextColored(new Vector4(0.3f, 0.8f, 1f, 1f), $"File: {Main.CurrentCraftingFile.Name}");
+                }
+                if (!string.IsNullOrEmpty(Main.CurrentCraftingFile.Description))
+                {
+                    ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1f), Main.CurrentCraftingFile.Description);
+                }
+
+                ImGui.Spacing();
+
+                // Display all conditions
+                foreach (var condition in Main.CurrentCraftingFile.GetAllConditions())
+                {
+                    ImGui.TextColored(new Vector4(0f, 1f, 0.022f, 1f), condition.Type + (condition.UseShift ? " - Shift" : string.Empty));
                     ImGui.SetNextItemWidth(399);
                     ImGui.Separator();
-                    ImGui.TextUnformatted(filter.RawQuery);
+                    ImGui.TextUnformatted(condition.RawQuery);
                     ImGui.Spacing();
                 }
             }
-
             else
             {
                 ImGui.Text("No valid crafting file selected.");

@@ -4,7 +4,7 @@ using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared.Enums;
 using SharpDX;
 using static ExileCore.PoEMemory.MemoryObjects.ServerInventory;
-using static MyLittleCrafter.Enums.MyLittleCrafter;
+using MyLittleCrafter.Enums;
 
 namespace MyLittleCrafter.Handlers;
 

@@ -1,20 +1,22 @@
-using static MyLittleCrafter.Enums.MyLittleCrafter;
+using MyLittleCrafter.Enums;
 
 namespace MyLittleCrafter.IFL;
 
-public class EvaluationResult
+/// <summary>
+/// Immutable result of evaluating an item against crafting conditions
+/// </summary>
+public record EvaluationResult(
+    bool IsItemFinished,
+    string CurrencyOrCraftName,
+    bool UseShift,
+    ConditionType ConditionType)
 {
-    public bool IsItemFinished { get; set; }
-    public string CurrencyOrCraftName { get; set; }
-    public bool UseShift { get; set; }
-    public ConditionType ConditionType { get; set; }
-
-    public EvaluationResult(bool isItemFinished, string currency, bool useShift, ConditionType conditionType)
+    /// <summary>
+    /// Factory method that creates an evaluation result and logs it
+    /// </summary>
+    public static EvaluationResult Create(bool isItemFinished, string currency, bool useShift, ConditionType conditionType)
     {
-        IsItemFinished = isItemFinished;
-        CurrencyOrCraftName = currency;
-        UseShift = useShift;
-        ConditionType = conditionType;
         Logger.Log(LogType.Debug, $"Item Evaluation: IsItemFinished={isItemFinished}, CurrencyOrCraftName={currency}, UseShift={useShift}, ConditionType={conditionType}");
+        return new EvaluationResult(isItemFinished, currency, useShift, conditionType);
     }
 }

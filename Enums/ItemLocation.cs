@@ -1,14 +1,11 @@
-namespace MyLittleCrafter.Enums
+namespace MyLittleCrafter.Enums;
+
+public enum ItemLocation
 {
-    public partial class MyLittleCrafter
-    {
-        public enum ItemLocation
-        {
-            PlayerInventory,
-            CraftingBench,
-            HarvestBench,
-            InputStash,
-            CurrencyStash,
-        }
-    }
+    PlayerInventory,
+    CraftingBench,
+    HarvestBench,
+    InputStash,
+    CurrencyStash,
+    OutputStash,
 }
