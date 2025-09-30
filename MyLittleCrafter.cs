@@ -182,7 +182,8 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
 
         if (StateHandler.IsAnItemRightClicked())
         {
-            Input.KeyPressRelease(Keys.Escape);
+            Input.KeyDown(Keys.Escape);
+            Input.KeyUp(Keys.Escape);
         }
 
         if (InputController != null)

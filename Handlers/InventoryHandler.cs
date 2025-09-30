@@ -41,17 +41,13 @@ public static class InventoryHandler
     }
 
     public static async SyncTask<bool> WaitForInventoryToUpdate(ServerInventory serverInventory, int initialServerRequestCounter, CancellationToken token)
-    {
-        Logger.Log(LogType.Info, $"[TRACE] WaitForInventoryToUpdate called. Initial: {initialServerRequestCounter}");
-        
+    {        
         var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(() =>
         {
             var serverRequestCounter = GetServerRequestCounterForServerInventory(serverInventory);
-            Logger.Log(LogType.Info, $"[TRACE] WaitForInventoryToUpdate checking: Current={serverRequestCounter}, Initial={initialServerRequestCounter}, Different={serverRequestCounter != initialServerRequestCounter}");
             return serverRequestCounter != initialServerRequestCounter;
         }, token);
         
-        Logger.Log(LogType.Info, $"[TRACE] WaitForInventoryToUpdate result: {result}");
         return result;
     }
 

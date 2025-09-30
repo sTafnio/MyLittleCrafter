@@ -42,9 +42,7 @@ internal class PlayerInventoryLocationHandler : IItemLocationHandler
     }
 
     public async SyncTask<bool> WaitForItem(RectangleF clientRect, CancellationToken token)
-    {
-        Logger.Log(LogType.Info, $"[TRACE] PlayerInventoryLocationHandler.WaitForItem called with ClientRect: {clientRect}");
-        
+    {        
         var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(
             () =>
             {
@@ -54,18 +52,14 @@ internal class PlayerInventoryLocationHandler : IItemLocationHandler
                 {
                     // Log what items ARE in inventory
                     var allItems = PlayerInventoryHandler.CraftableInventSlotItemsInPlayerInventory;
-                    Logger.Log(LogType.Info, $"[TRACE] PlayerInventory WaitForItem: Looking for item at {clientRect.Center}. Found {allItems.Count} total items in inventory");
                     foreach (var invItem in allItems.Take(3))  // Log first 3 for debugging
                     {
                         var itemRect = invItem.GetClientRect();
-                        Logger.Log(LogType.Info, $"[TRACE] PlayerInventory has item at center: {itemRect.Center}, comparing to target: {clientRect.Center}");
                     }
                 }
                 return found;
             },
             token);
-        
-        Logger.Log(LogType.Info, $"[TRACE] PlayerInventoryLocationHandler.WaitForItem result: {result}");
         return result;
     }
 

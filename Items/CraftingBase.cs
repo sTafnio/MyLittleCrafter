@@ -42,13 +42,11 @@ public class CraftingBase
 
     public async SyncTask<bool> UpdateItemDataAsync(CancellationToken token)
     {
-        Logger.Log(LogType.Info, $"[TRACE] UpdateItemDataAsync called. ItemLocation: {ItemLocation}, ClientRect: {ClientRect}");
         Entity newItem;
 
         // Special handling for CurrencyStash due to NormalInventoryItem type
         if (ItemLocation == ItemLocation.CurrencyStash)
         {
-            Logger.Log(LogType.Info, $"[TRACE] UpdateItemDataAsync: CurrencyStash path - waiting for item");
             if (!await _currentHandler.WaitForItem(ClientRect, token))
             {
                 Logger.Log(LogType.Error, $"UpdateItemData: Timeout waiting for craftable item in {ItemLocation}.");
@@ -60,7 +58,6 @@ public class CraftingBase
         }
         else
         {
-            Logger.Log(LogType.Info, $"[TRACE] UpdateItemDataAsync: Standard path - waiting for item at {ItemLocation}");
             // Standard handling using handler interface
             if (!await _currentHandler.WaitForItem(ClientRect, token))
             {
@@ -68,7 +65,6 @@ public class CraftingBase
                 return false;
             }
 
-            Logger.Log(LogType.Info, $"[TRACE] UpdateItemDataAsync: WaitForItem succeeded, getting item");
             var item = _currentHandler.GetItem(ClientRect);
             if (item == null)
             {
@@ -86,7 +82,6 @@ public class CraftingBase
         }
 
         ItemData = new ItemData(newItem, Main.GameController);
-        Logger.Log(LogType.Info, $"[TRACE] UpdateItemDataAsync: Successfully updated item data at {ItemLocation}.");
         return true;
     }
 
