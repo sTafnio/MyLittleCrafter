@@ -17,15 +17,42 @@
       "Type": "Orb of Augmentation",
       "Query": {
         "Or": [
-          "new[] {ModsInfo.ExplicitMods.Any(Name == \"IncreasedLife\")}.Count(x => x) == 1 && ModsInfo.OpenSuffixCount >= 1",
-          "new[] {ModsInfo.ExplicitMods.Any(Name == \"FireResist\"), ModsInfo.ExplicitMods.Any(Name == \"ColdResist\"), ModsInfo.ExplicitMods.Any(Name == \"LightningResist\")}.Count(x => x) == 1 && ModsInfo.OpenPrefixCount >= 1"
+          {
+            "And": [
+              {
+                "Count == 1": [
+                  "ModsInfo.ExplicitMods.Any(Name == \"IncreasedLife\")"
+                ]
+              },
+              "ModsInfo.OpenSuffixCount >= 1"
+            ]
+          },
+          {
+            "And": [
+              {
+                "Count == 1": [
+                  "ModsInfo.ExplicitMods.Any(Name == \"FireResist\")",
+                  "ModsInfo.ExplicitMods.Any(Name == \"ColdResist\")",
+                  "ModsInfo.ExplicitMods.Any(Name == \"LightningResist\")"
+                ]
+              },
+              "ModsInfo.OpenPrefixCount >= 1"
+            ]
+          }
         ]
       },
       "UseShift": false
     },
     {
       "Type": "Orb of Alteration",
-      "Query": "new[] {ModsInfo.ExplicitMods.Any(Name == \"FireResist\"), ModsInfo.ExplicitMods.Any(Name == \"ColdResist\"), ModsInfo.ExplicitMods.Any(Name == \"LightningResist\"), ModsInfo.ExplicitMods.Any(Name == \"IncreasedLife\")}.Count(x => x) < 2",
+      "Query": {
+        "Count < 2": [
+          "ModsInfo.ExplicitMods.Any(Name == \"FireResist\")",
+          "ModsInfo.ExplicitMods.Any(Name == \"ColdResist\")",
+          "ModsInfo.ExplicitMods.Any(Name == \"LightningResist\")",
+          "ModsInfo.ExplicitMods.Any(Name == \"IncreasedLife\")"
+        ]
+      },
       "UseShift": true
     }
   ]
