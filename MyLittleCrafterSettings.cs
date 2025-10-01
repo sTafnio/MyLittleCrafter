@@ -13,7 +13,6 @@ using MyLittleCrafter.Handlers;
 using MyLittleCrafter.Enums;
 using static MyLittleCrafter.MyLittleCrafter;
 using MyLittleCrafter.Tracker;
-using ExileCore;
 
 namespace MyLittleCrafter;
 

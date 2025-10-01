@@ -95,8 +95,8 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
             Logger.Log(LogType.Info, "NinjaPrice plugin bridge not found. NinjaPrice integration will be disabled.");
         }
 
-        PluginBridge.SaveMethod("MyLittleCrafter.Start", (Action)Start);
-        PluginBridge.SaveMethod("MyLittleCrafter.Stop", (Action)Stop);
+        GameController.PluginBridge.SaveMethod("MyLittleCrafter.Start", (Action)Start);
+        GameController.PluginBridge.SaveMethod("MyLittleCrafter.Stop", (Action)Stop);
 
 
         return true;
@@ -119,8 +119,6 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
         Input.RegisterKey(hotkey.Value);
         hotkey.OnValueChanged += () => Input.RegisterKey(hotkey.Value);
     }
-
-
 
     public override Job Tick()
     {
@@ -148,7 +146,6 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
         StateHandler.ResetCraftSelection();
         return null;
     }
-
 
     public void Start()
     {
@@ -229,14 +226,6 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
 
     private async SyncTask<bool> CraftingStart(CancellationToken token)
     {
-        // Refresh might solve some issues with items not being up to date
-        GameController.Area.ForceRefreshArea(true);
-        await Task.Delay(500, token);
-
-        if (!CraftingSetupManager.SetUpCrafting()) return false;
-
-        Tracker.Tracker.StartCraft();
-
         var tryGetInputController = GameController.PluginBridge.GetMethod<Func<string, IInputController>>("InputHumanizer.TryGetInputController");
         if (tryGetInputController == null)
         {
@@ -255,10 +244,20 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
 
         InputController = inputController;
 
+        // Refresh might solve some issues with items not being up to date
+        // GameController.Area.ForceRefreshArea(true);
+        // await Task.Delay(500, token);
+
         using (inputController)
         {
             try
             {
+                if (!await CraftingSetupManager.LoadStashes(token)) return false;
+
+                if (!CraftingSetupManager.SetUpCrafting()) return false;
+
+                Tracker.Tracker.StartCraft();
+
                 switch (Settings.General.SelectedMethod)
                 {
                     case CraftingMethod.Inventory:

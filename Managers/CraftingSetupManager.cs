@@ -6,6 +6,8 @@ using MyLittleCrafter.Items;
 using static ExileCore.PoEMemory.MemoryObjects.ServerInventory;
 using MyLittleCrafter.Enums;
 using static MyLittleCrafter.MyLittleCrafter;
+using ExileCore.Shared;
+using System.Threading;
 
 namespace MyLittleCrafter.Managers;
 
@@ -212,5 +214,18 @@ public static class CraftingSetupManager
         Logger.Log(LogType.Debug, "Selected stash tabs are valid.");
         return true;
     }
-}
 
+    public static async SyncTask<bool> LoadStashes(CancellationToken token)
+    {
+        if (!await CraftingHandler.MoveToStashIndex(Main.Settings.StashOptions.CurrencyStashIndex, token))
+        {
+            Logger.Log(LogType.Error, "Could not move to Currency Stash to load it.");
+        }
+        if (!await CraftingHandler.MoveToStashIndex(Main.Settings.StashOptions.InputStashIndex, token))
+        {
+            Logger.Log(LogType.Error, "Could not move to Input Stash to load it.");
+        }
+
+        return true;
+    }
+}
