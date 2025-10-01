@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ExileCore.PoEMemory.Models;
-using MyLittleCrafter.Enums;
 using static MyLittleCrafter.MyLittleCrafter;
+using MyLittleCrafter.Utils;
 
 namespace MyLittleCrafter.Tracker;
 
@@ -88,7 +88,7 @@ public static class Tracker
         }
         else
         {
-            Logger.Log(LogType.Debug, $"Failed to calculate resource cost - value calculator not initialized");
+            Log.Debug( $"Failed to calculate resource cost - value calculator not initialized");
             CurrentTrackedCraft.ResourcesCostPerOneUnit[resourceName] = 0;
         }
     }

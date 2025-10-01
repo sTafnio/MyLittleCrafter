@@ -4,6 +4,7 @@ using ImGuiNET;
 using MyLittleCrafter.Enums;
 using MyLittleCrafter.Handlers;
 using static MyLittleCrafter.MyLittleCrafter;
+using MyLittleCrafter.Utils;
 
 namespace MyLittleCrafter.Settings;
 
@@ -36,7 +37,7 @@ public class StashOptions
                             if (ImGui.Selectable(stashNames[i], isSelected))
                             {
                                 InputStashIndex = i;
-                                Logger.Log(LogType.Debug, $"Input Stash selected: {stashNames[i]}");
+                                Log.Debug( $"Input Stash selected: {stashNames[i]}");
                             }
 
                             if (isSelected)
@@ -53,7 +54,7 @@ public class StashOptions
                             if (ImGui.Selectable(stashNames[i], isSelected))
                             {
                                 OutputStashIndex = i;
-                                Logger.Log(LogType.Debug, $"Output Stash selected: {stashNames[i]}");
+                                Log.Debug( $"Output Stash selected: {stashNames[i]}");
                             }
 
                             if (isSelected)
@@ -70,7 +71,7 @@ public class StashOptions
                             if (ImGui.Selectable(stashNames[i], isSelected))
                             {
                                 CurrencyStashIndex = i;
-                                Logger.Log(LogType.Debug, $"Currency Stash selected: {stashNames[i]}");
+                                Log.Debug( $"Currency Stash selected: {stashNames[i]}");
                             }
 
                             if (isSelected)

@@ -4,6 +4,7 @@ using ExileCore.Shared;
 using MyLittleCrafter.Handlers;
 using MyLittleCrafter.Enums;
 using static MyLittleCrafter.MyLittleCrafter;
+using MyLittleCrafter.Utils;
 
 namespace MyLittleCrafter.Managers;
 
@@ -13,13 +14,13 @@ public static class InventoryCraftingManager
     {
         try
         {
-            Logger.Log(LogType.CraftingState, $"Started {Main.Settings.FileOptions.SelectedCraftingFile.Value} with {Main.ItemsToCraftOnList.Count} bases.");
+            Log.CraftingState( $"Started {Main.Settings.FileOptions.SelectedCraftingFile.Value} with {Main.ItemsToCraftOnList.Count} bases.");
             int itemIndex = 0;
 
             foreach (var craftingBase in Main.ItemsToCraftOnList)
             {
                 itemIndex++;
-                Logger.Log(LogType.CraftingState, $"Started Item {itemIndex}.");
+                Log.CraftingState( $"Started Item {itemIndex}.");
 
                 while (true && !token.IsCancellationRequested)
                 {
@@ -29,7 +30,7 @@ public static class InventoryCraftingManager
                     if (itemEvaluation.IsItemFinished)
                     {
                         Tracker.Tracker.FinishItem();
-                        Logger.Log(LogType.CraftingState, $"Item {itemIndex} is finished.");
+                        Log.CraftingState( $"Item {itemIndex} is finished.");
                         break;
                     }
 
@@ -44,7 +45,7 @@ public static class InventoryCraftingManager
                 }
             }
 
-            Logger.Log(LogType.Success, $"Finished crafting all {itemIndex} items for {Main.Settings.FileOptions.SelectedCraftingFile.Value}.");
+            Log.Success( $"Finished crafting all {itemIndex} items for {Main.Settings.FileOptions.SelectedCraftingFile.Value}.");
             return true;
         }
         catch (OperationCanceledException)

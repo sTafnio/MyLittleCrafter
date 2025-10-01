@@ -1,4 +1,5 @@
 using MyLittleCrafter.Enums;
+using MyLittleCrafter.Utils;
 
 namespace MyLittleCrafter.IFL;
 
@@ -16,7 +17,7 @@ public record EvaluationResult(
     /// </summary>
     public static EvaluationResult Create(bool isItemFinished, string currency, bool useShift, ConditionType conditionType)
     {
-        Logger.Log(LogType.Debug, $"Item Evaluation: IsItemFinished={isItemFinished}, CurrencyOrCraftName={currency}, UseShift={useShift}, ConditionType={conditionType}");
+        Log.Debug( $"Item Evaluation: IsItemFinished={isItemFinished}, CurrencyOrCraftName={currency}, UseShift={useShift}, ConditionType={conditionType}");
         return new EvaluationResult(isItemFinished, currency, useShift, conditionType);
     }
 }

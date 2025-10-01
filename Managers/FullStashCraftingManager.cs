@@ -5,6 +5,7 @@ using ExileCore.Shared;
 using MyLittleCrafter.Handlers;
 using MyLittleCrafter.Enums;
 using static MyLittleCrafter.MyLittleCrafter;
+using MyLittleCrafter.Utils;
 
 namespace MyLittleCrafter.Managers;
 
@@ -14,7 +15,7 @@ public static class FullStashCraftingManager
     {
         try
         {
-            Logger.Log(LogType.CraftingState, $"Started {Main.Settings.FileOptions.SelectedCraftingFile.Value} with {Main.ItemsToCraftOnList.Count} bases.");
+            Log.CraftingState( $"Started {Main.Settings.FileOptions.SelectedCraftingFile.Value} with {Main.ItemsToCraftOnList.Count} bases.");
             int itemIndex = 0;
 
             foreach (var craftingBase in Main.ItemsToCraftOnList)
@@ -24,7 +25,7 @@ public static class FullStashCraftingManager
                 // If an item is in the currency stash at the start of the crafting process, that we won't craft on
                 if (itemIndex == 1 && craftingBase.ItemLocation != ItemLocation.CurrencyStash && StashHandler.NonCurrencyItemInCurrencyStash != null)
                 {
-                    Logger.Log(LogType.Debug, "Item in currency stash is not a valid crafting base. Need to remove it.");
+                    Log.Debug( "Item in currency stash is not a valid crafting base. Need to remove it.");
 
                     // Move to currency stash
                     if (!await CraftingHandler.MoveToStashIndex(StashHandler.CurrencyStashIndex, token)) return false;
@@ -43,7 +44,7 @@ public static class FullStashCraftingManager
                     craftingBase.ClientRect = itemInCurrencyStash.GetClientRect();
                 }
 
-                Logger.Log(LogType.CraftingState, $"Started Item {itemIndex}.");
+                Log.CraftingState( $"Started Item {itemIndex}.");
 
                 while (true && !token.IsCancellationRequested)
                 {
@@ -61,7 +62,7 @@ public static class FullStashCraftingManager
                     if (itemEvaluation.IsItemFinished)
                     {
                         Tracker.Tracker.FinishItem();
-                        Logger.Log(LogType.CraftingState, $"Item {itemIndex} is finished.");
+                        Log.CraftingState( $"Item {itemIndex} is finished.");
                         if (!await CraftingHandler.MoveItemFromTo(craftingBase, StashHandler.CurrencyStashIndex, StashHandler.OutputStashIndex, token)) return false;
                         if (!craftingBase.OnMovedToOutputStash()) return false; // Stop if invalid transition
                         break;
@@ -78,7 +79,7 @@ public static class FullStashCraftingManager
                 }
             }
 
-            Logger.Log(LogType.Success, $"Finished crafting all {itemIndex} items for {Main.Settings.FileOptions.SelectedCraftingFile.Value}.");
+            Log.Success( $"Finished crafting all {itemIndex} items for {Main.Settings.FileOptions.SelectedCraftingFile.Value}.");
             return true;
         }
         catch (OperationCanceledException)

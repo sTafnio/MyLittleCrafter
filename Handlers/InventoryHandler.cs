@@ -8,8 +8,8 @@ using ExileCore.Shared.Enums;
 using MyLittleCrafter.Items;
 using Vector2 = System.Numerics.Vector2;
 using static ExileCore.PoEMemory.MemoryObjects.ServerInventory;
-using MyLittleCrafter.Enums;
 using static MyLittleCrafter.MyLittleCrafter;
+using MyLittleCrafter.Utils;
 
 namespace MyLittleCrafter.Handlers;
 
@@ -57,7 +57,7 @@ public static class InventoryHandler
         var currencyClientRect = closestCurrency.GetClientRect();
 
         var randomPoint = HelperHandler.GetRandomPointInRectangleF(currencyClientRect);
-        Logger.Log(LogType.Debug, $"Random point for {currency}: {randomPoint}");
+        Log.Debug( $"Random point for {currency}: {randomPoint}");
 
         return randomPoint;
     }

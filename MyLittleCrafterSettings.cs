@@ -15,5 +15,6 @@ public class MyLittleCrafterSettings : ISettings
     public StatTracker Tracker { get; set; } = new();
     public DiscordNotifications DiscordNotifications { get; set; } = new();
     public SystemOptions SystemOptions { get; set; } = new();
+    public LoggerSettings Logger { get; set; } = new();
     public Debug Debug { get; set; } = new();
 }

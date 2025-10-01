@@ -7,6 +7,7 @@ using ExileCore.Shared.Enums;
 using SharpDX;
 using MyLittleCrafter.Enums;
 using static MyLittleCrafter.MyLittleCrafter;
+using MyLittleCrafter.Utils;
 
 namespace MyLittleCrafter.Handlers;
 
@@ -40,34 +41,34 @@ public static class StateHandler
     {
         if (!IsInGame)
         {
-            Logger.Log(LogType.Error, "Not in game.");
+            Log.Error( "Not in game.");
             return true;
         }
         if (!IsGameFocused)
         {
-            Logger.Log(LogType.Error, "Game is not focused.");
+            Log.Error( "Game is not focused.");
             return true;
         }
         if (!PlayerInventoryHandler.IsPlayerInventoryPanelOpen)
         {
-            Logger.Log(LogType.Error, "Player inventory is not open.");
+            Log.Error( "Player inventory is not open.");
             return true;
         }
         if (Main.Settings.General.SelectedMethod == CraftingMethod.HarvestBench && !HarvestBenchHandler.IsHarvestBenchPanelOpen)
         {
-            Logger.Log(LogType.Error, "Harvest bench is not open.");
+            Log.Error( "Harvest bench is not open.");
             return true;
         }
         if (Main.Settings.General.SelectedMethod == CraftingMethod.CraftingBench && !CraftingBenchHandler.IsCraftingBenchPanelOpen)
         {
-            Logger.Log(LogType.Error, "Crafting bench is not open.");
+            Log.Error( "Crafting bench is not open.");
             return true;
         }
         if (Main.Settings.General.SelectedMethod == CraftingMethod.FullStash)
         {
             if (!StashHandler.IsStashPanelOpen)
             {
-                Logger.Log(LogType.Error, "Stash is not open.");
+                Log.Error( "Stash is not open.");
                 return true;
             }
         }

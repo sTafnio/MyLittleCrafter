@@ -4,6 +4,7 @@ using ExileCore.Shared.Attributes;
 using ExileCore.Shared.Nodes;
 using ImGuiNET;
 using MyLittleCrafter.Handlers;
+using MyLittleCrafter.Utils;
 using static MyLittleCrafter.MyLittleCrafter;
 
 namespace MyLittleCrafter.Settings;
@@ -43,7 +44,7 @@ public class FileSelectionOptions
                 }
                 else
                 {
-                    Logger.Log(Enums.LogType.Error, $"{directory} not found.");
+                    Log.Error($"{directory} not found.");
                 }
             }
         };

@@ -2,8 +2,8 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using MyLittleCrafter.Enums;
 using static MyLittleCrafter.MyLittleCrafter;
+using MyLittleCrafter.Utils;
 
 namespace MyLittleCrafter;
 
@@ -32,11 +32,11 @@ public static class SystemService
                 DiscordService.SendDiscordNotification("ExileAPI has been closed by MyLittleCrafter.");
             }
 
-            Logger.Log(LogType.Info, "ExileAPI has been closed.");
+            Log.Info( "ExileAPI has been closed.");
         }
         catch (Exception ex)
         {
-            Logger.Log(LogType.Error, $"Failed to close ExileAPI: {ex.Message}");
+            Log.Error( $"Failed to close ExileAPI: {ex.Message}");
         }
     }
 
@@ -56,16 +56,16 @@ public static class SystemService
                     DiscordService.SendDiscordNotification("Path of Exile has been closed by MyLittleCrafter.");
                 }
 
-                Logger.Log(LogType.Info, "Path of Exile has been closed.");
+                Log.Info( "Path of Exile has been closed.");
             }
             else
             {
-                Logger.Log(LogType.Error, "Path of Exile window not found.");
+                Log.Error( "Path of Exile window not found.");
             }
         }
         catch (Exception ex)
         {
-            Logger.Log(LogType.Error, $"Failed to close Path of Exile: {ex.Message}");
+            Log.Error( $"Failed to close Path of Exile: {ex.Message}");
         }
     }
 
@@ -81,14 +81,14 @@ public static class SystemService
                 Task.Delay(2000).Wait();
             }
 
-            Logger.Log(LogType.Info, "Computer is being shut down.");
+            Log.Info( "Computer is being shut down.");
 
             // Execute the shutdown command
             Process.Start("shutdown", "/s /t 5 /c \"Shutdown initiated by MyLittleCrafter\"");
         }
         catch (Exception ex)
         {
-            Logger.Log(LogType.Error, $"Failed to shutdown computer: {ex.Message}");
+            Log.Error( $"Failed to shutdown computer: {ex.Message}");
         }
     }
 }

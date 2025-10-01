@@ -8,6 +8,7 @@ using MyLittleCrafter.Enums;
 using static MyLittleCrafter.MyLittleCrafter;
 using ExileCore.Shared;
 using System.Threading;
+using MyLittleCrafter.Utils;
 
 namespace MyLittleCrafter.Managers;
 
@@ -63,19 +64,19 @@ public static class CraftingSetupManager
                 ProcessPotentialCraftingBases(potentialCraftingBases, ItemLocation.InputStash);
                 break;
             default:
-                Logger.Log(LogType.Error, $"Invalid crafting method: {Main.Settings.General.SelectedMethod}.");
+                Log.Error( $"Invalid crafting method: {Main.Settings.General.SelectedMethod}.");
                 return false;
         }
 
         // Check if any crafting bases exist in the list after processing
         if (Main.ItemsToCraftOnList.Count == 0)
         {
-            Logger.Log(LogType.Error, "Could not find any crafting bases to craft on.");
+            Log.Error( "Could not find any crafting bases to craft on.");
             return false;
         }
-        Logger.Log(LogType.Debug, $"Found {Main.ItemsToCraftOnList.Count} crafting bases to craft on.");
+        Log.Debug( $"Found {Main.ItemsToCraftOnList.Count} crafting bases to craft on.");
 
-        Logger.Log(LogType.Debug, $"Full crafting setup is valid.");
+        Log.Debug( $"Full crafting setup is valid.");
         return true;
     }
 
@@ -84,28 +85,28 @@ public static class CraftingSetupManager
         // Check if a crafting file is selected
         if (string.IsNullOrEmpty(Main.Settings.FileOptions.SelectedCraftingFile))
         {
-            Logger.Log(LogType.Error, "No Crafting File selected.");
+            Log.Error( "No Crafting File selected.");
             return false;
         }
 
         // Check if crafting file is loaded
         if (Main.CurrentCraftingFile == null)
         {
-            Logger.Log(LogType.Error, "No crafting file loaded.");
+            Log.Error( "No crafting file loaded.");
             return false;
         }
 
         // Check if any crafting conditions exist
         if (Main.CurrentCraftingFile.CraftingConditions == null || Main.CurrentCraftingFile.CraftingConditions.Count == 0)
         {
-            Logger.Log(LogType.Error, "No crafting conditions exist.");
+            Log.Error( "No crafting conditions exist.");
             return false;
         }
 
         // Check if the crafting method and the crafting file match
         if (!CraftingMethodAndFileMatchCheck()) return false;
 
-        Logger.Log(LogType.Debug, "Base crafting setup is valid.");
+        Log.Debug( "Base crafting setup is valid.");
         return true;
     }
 
@@ -122,7 +123,7 @@ public static class CraftingSetupManager
                     condition.ConditionType == ConditionType.StackableCurrencyUse || condition.ConditionType == ConditionType.ItemSelection);
                 if (!isValid)
                 {
-                    Logger.Log(LogType.Error, $"Invalid condition type(s) exist for {selectedMethod}. Only Stackable Currency Use and ItemSelection conditions are allowed.");
+                    Log.Error( $"Invalid condition type(s) exist for {selectedMethod}. Only Stackable Currency Use and ItemSelection conditions are allowed.");
                     return false;
                 }
                 break;
@@ -133,7 +134,7 @@ public static class CraftingSetupManager
                     condition.ConditionType == ConditionType.StackableCurrencyUse || condition.ConditionType == ConditionType.CraftingBenchCraft || condition.ConditionType == ConditionType.ItemSelection);
                 if (!isValid)
                 {
-                    Logger.Log(LogType.Error, $"Invalid condition type(s) exist for {selectedMethod}. Only Stackable Currency Use, Crafting Bench Craft and ItemSelection conditions are allowed.");
+                    Log.Error( $"Invalid condition type(s) exist for {selectedMethod}. Only Stackable Currency Use, Crafting Bench Craft and ItemSelection conditions are allowed.");
                     return false;
                 }
                 break;
@@ -144,17 +145,17 @@ public static class CraftingSetupManager
                     condition.ConditionType == ConditionType.StackableCurrencyUse || condition.ConditionType == ConditionType.HarvestBenchCraft || condition.ConditionType == ConditionType.ItemSelection);
                 if (!isValid)
                 {
-                    Logger.Log(LogType.Error, $"Invalid condition type(s) exist for {selectedMethod}. Only Stackable Currency Use, Harvest Bench Craft and ItemSelection conditions are allowed.");
+                    Log.Error( $"Invalid condition type(s) exist for {selectedMethod}. Only Stackable Currency Use, Harvest Bench Craft and ItemSelection conditions are allowed.");
                     return false;
                 }
                 break;
 
             default:
-                Logger.Log(LogType.Error, $"No crafting method selected: {selectedMethod}.");
+                Log.Error( $"No crafting method selected: {selectedMethod}.");
                 return false;
         }
 
-        Logger.Log(LogType.Debug, $"{selectedMethod} is valid for the loaded crafting conditions.");
+        Log.Debug( $"{selectedMethod} is valid for the loaded crafting conditions.");
         return true;
     }
 
@@ -181,37 +182,37 @@ public static class CraftingSetupManager
         // Check if stashes are selected
         if (StashHandler.InputStashIndex == -1 || StashHandler.OutputStashIndex == -1 || StashHandler.CurrencyStashIndex == -1)
         {
-            Logger.Log(LogType.Error, "Not all stash tabs are selected in settings.");
+            Log.Error( "Not all stash tabs are selected in settings.");
             return false;
         }
 
         // Check if currency and input stash tabs are loaded, no need to load output stash
         if (StashHandler.CurrencyStashServerInventory == null || StashHandler.InputStashServerInventory == null)
         {
-            Logger.Log(LogType.Error, "Stash tabs are not loaded. Select the stash tabs once to load them.");
+            Log.Error( "Stash tabs are not loaded. Select the stash tabs once to load them.");
             return false;
         }
 
         // Check for correct stash tab types
         if (StashHandler.InputStashTabType != InventoryType.NormalStash && StashHandler.InputStashTabType != InventoryType.QuadStash)
         {
-            Logger.Log(LogType.Error, "Input stash tab is not a valid type. Only Normal or Quad stash tabs are supported.");
+            Log.Error( "Input stash tab is not a valid type. Only Normal or Quad stash tabs are supported.");
             return false;
         }
 
         if (StashHandler.OutputStashTabType != InventoryType.NormalStash && StashHandler.OutputStashTabType != InventoryType.QuadStash)
         {
-            Logger.Log(LogType.Error, "Output stash tab is not a valid stash tab type. Only Normal or Quad Stash are supported.");
+            Log.Error( "Output stash tab is not a valid stash tab type. Only Normal or Quad Stash are supported.");
             return false;
         }
 
         if (StashHandler.CurrencyStashTabType != InventoryType.CurrencyStash)
         {
-            Logger.Log(LogType.Error, "Currency stash tab is not a valid stash tab type. Only Currency Stash is supported.");
+            Log.Error( "Currency stash tab is not a valid stash tab type. Only Currency Stash is supported.");
             return false;
         }
 
-        Logger.Log(LogType.Debug, "Selected stash tabs are valid.");
+        Log.Debug( "Selected stash tabs are valid.");
         return true;
     }
 
@@ -219,11 +220,11 @@ public static class CraftingSetupManager
     {
         if (!await CraftingHandler.MoveToStashIndex(Main.Settings.StashOptions.CurrencyStashIndex, token))
         {
-            Logger.Log(LogType.Error, "Could not move to Currency Stash to load it.");
+            Log.Error( "Could not move to Currency Stash to load it.");
         }
         if (!await CraftingHandler.MoveToStashIndex(Main.Settings.StashOptions.InputStashIndex, token))
         {
-            Logger.Log(LogType.Error, "Could not move to Input Stash to load it.");
+            Log.Error( "Could not move to Input Stash to load it.");
         }
 
         return true;

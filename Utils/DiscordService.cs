@@ -3,9 +3,9 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using MyLittleCrafter.Enums;
 using static MyLittleCrafter.MyLittleCrafter;
 using MyLittleCrafter.Tracker;
+using MyLittleCrafter.Utils;
 
 namespace MyLittleCrafter;
 
@@ -24,7 +24,7 @@ public static class DiscordService
         string webhookUrl = Main.Settings.DiscordNotifications.WebhookUrl.Value;
         if (string.IsNullOrEmpty(webhookUrl))
         {
-            Logger.Log(LogType.Error, "Discord webhook URL is not configured.");
+            Log.Error( "Discord webhook URL is not configured.");
             return;
         }
 
@@ -58,22 +58,22 @@ public static class DiscordService
                     if (!response.IsSuccessStatusCode)
                     {
                         string errorContent = await response.Content.ReadAsStringAsync();
-                        Logger.Log(LogType.Error, $"Failed to send Discord notification. Status: {response.StatusCode}, Error: {errorContent}");
+                        Log.Error( $"Failed to send Discord notification. Status: {response.StatusCode}, Error: {errorContent}");
                     }
                     else
                     {
-                        Logger.Log(LogType.Success, isTest ? "Test Discord notification sent successfully!" : "Discord notification sent successfully!");
+                        Log.Success( isTest ? "Test Discord notification sent successfully!" : "Discord notification sent successfully!");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(LogType.Error, $"Exception sending Discord notification: {ex.Message}");
+                    Log.Error( $"Exception sending Discord notification: {ex.Message}");
                 }
             });
         }
         catch (Exception ex)
         {
-            Logger.Log(LogType.Error, $"Exception preparing Discord notification: {ex.Message}");
+            Log.Error( $"Exception preparing Discord notification: {ex.Message}");
         }
     }
 

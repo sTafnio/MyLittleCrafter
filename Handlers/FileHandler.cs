@@ -3,8 +3,8 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MyLittleCrafter.IFL;
-using MyLittleCrafter.Enums;
 using static MyLittleCrafter.MyLittleCrafter;
+using MyLittleCrafter.Utils;
 
 namespace MyLittleCrafter.Handlers;
 
@@ -18,21 +18,21 @@ public static class FileHandler
         var filePath = Path.Combine(Main.ConfigDirectory, $"{fileName}.json");
         if (!File.Exists(filePath))
         {
-            Logger.Log(LogType.Error, $"{fileName}.json not found");
+            Log.Error( $"{fileName}.json not found");
             return;
         }
 
-        Logger.Log(LogType.Info, $"Loading {fileName} asynchronously...");
+        Log.Info( $"Loading {fileName} asynchronously...");
         var result = await JsonFileParser.LoadFileAsync(filePath, cancellationToken);
 
         if (!result.Success)
         {
-            Logger.Log(LogType.Error, $"Failed to load {fileName}: {result.ErrorMessage}");
+            Log.Error( $"Failed to load {fileName}: {result.ErrorMessage}");
             return;
         }
 
         // Only assign on success - atomic operation
         Main.CurrentCraftingFile = result.CraftingFile;
-        Logger.Log(LogType.Info, $"{fileName} loaded successfully.");
+        Log.Info( $"{fileName} loaded successfully.");
     }
 }

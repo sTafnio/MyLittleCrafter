@@ -6,11 +6,11 @@ using System.Linq;
 using static MyLittleCrafter.MyLittleCrafter;
 using static ExileCore.PoEMemory.MemoryObjects.ServerInventory;
 using ExileCore.PoEMemory.Components;
-using MyLittleCrafter.Enums;
 using ExileCore.PoEMemory.Elements.InventoryElements;
 using ExileCore.PoEMemory.MemoryObjects;
 using System.Threading;
 using ExileCore.Shared;
+using MyLittleCrafter.Utils;
 
 namespace MyLittleCrafter.Handlers;
 
@@ -65,8 +65,8 @@ public static class StashHandler
     {
         var isAvailable = InventoryHandler.GetAllSpecificCurrencyFromServerInventory(CurrencyStashServerInventory, currency).Count != 0;
 
-        if (isAvailable) Logger.Log(LogType.Debug, $"{currency} is available in currency stash.");
-        else Logger.Log(LogType.Error, $"{currency} is not available in currency stash.");
+        if (isAvailable) Log.Debug( $"{currency} is available in currency stash.");
+        else Log.Error( $"{currency} is not available in currency stash.");
 
         return isAvailable;
     }

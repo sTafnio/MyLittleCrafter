@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MyLittleCrafter.Enums;
+using MyLittleCrafter.Utils;
 
 namespace MyLittleCrafter.Items;
 
@@ -47,11 +48,11 @@ public class CraftingBaseStateMachine
         if (!_validTransitions.TryGetValue((_currentLocation, targetLocation), out var transitionName))
         {
             errorMessage = $"Invalid transition from {_currentLocation} to {targetLocation}";
-            Logger.Log(LogType.Error, errorMessage);
+            Log.Error( errorMessage);
             return false;
         }
 
-        Logger.Log(LogType.Debug, $"State transition: {_currentLocation} → {targetLocation} ({transitionName})");
+        Log.Debug( $"State transition: {_currentLocation} → {targetLocation} ({transitionName})");
         _currentLocation = targetLocation;
         errorMessage = null;
         return true;
@@ -62,7 +63,7 @@ public class CraftingBaseStateMachine
     /// </summary>
     public void ForceTransitionTo(ItemLocation targetLocation)
     {
-        Logger.Log(LogType.Error, $"Forced state transition: {_currentLocation} → {targetLocation}");
+        Log.Error( $"Forced state transition: {_currentLocation} → {targetLocation}");
         _currentLocation = targetLocation;
     }
 

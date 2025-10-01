@@ -11,12 +11,12 @@ using MyLittleCrafter.Handlers;
 using System;
 using MyLittleCrafter.Managers;
 using MyLittleCrafter.Items;
-using System.Threading.Tasks;
 using InputHumanizer.Input;
 using Vector2N = System.Numerics.Vector2;
 using ExileCore.Shared.Helpers;
 using ExileCore.PoEMemory.Models;
 using MyLittleCrafter.Enums;
+using MyLittleCrafter.Utils;
 
 namespace MyLittleCrafter;
 
@@ -46,7 +46,7 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
     public override bool Initialise()
     {
         Main = this;
-        RegisterHotkey(Settings.General.ToggleButton.Value.Key);
+        RegisterHotkey(Settings.General.ToggleButton.Value);
 
         keysToRelease = [Keys.LButton, Keys.RButton, Keys.LControlKey, Keys.LShiftKey, Keys.F, Keys.V, Keys.Left, Keys.Right];
         foreach (var key in keysToRelease) Input.RegisterKey(key);
@@ -88,11 +88,11 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
         if (PluginBridge != null)
         {
             Tracker.Tracker.GetBaseItemTypeValue = PluginBridge.GetMethod<Func<BaseItemType, double>>("NinjaPrice.GetBaseItemTypeValue");
-            Logger.Log(LogType.Info, "NinjaPrice plugin bridge found. NinjaPrice integration enabled.");
+            Log.Info( "NinjaPrice plugin bridge found. NinjaPrice integration enabled.");
         }
         else
         {
-            Logger.Log(LogType.Info, "NinjaPrice plugin bridge not found. NinjaPrice integration will be disabled.");
+            Log.Info( "NinjaPrice plugin bridge not found. NinjaPrice integration will be disabled.");
         }
 
         GameController.PluginBridge.SaveMethod("MyLittleCrafter.Start", (Action)Start);
@@ -111,10 +111,10 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
             .ToList();
 
         Settings.FileOptions.SelectedCraftingFile.SetListValues(availableCraftFilesList);
-        Logger.Log(LogType.Info, $"Updated available craft files (found {availableCraftFilesList.Count} JSON files).");
+        Log.Info( $"Updated available craft files (found {availableCraftFilesList.Count} JSON files).");
     }
 
-    private static void RegisterHotkey(HotkeyNodeV2 hotkey)
+    private static void RegisterHotkey(HotkeyNode hotkey)
     {
         Input.RegisterKey(hotkey.Value);
         hotkey.OnValueChanged += () => Input.RegisterKey(hotkey.Value);
@@ -188,7 +188,7 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
             DiscordService.SendDiscordNotification(messageContent, statsContent);
         }
 
-        Logger.Log(LogType.Info, "Crafter has been stopped.");
+        Log.Info( "Crafter has been stopped.");
 
         // Execute system actions if enabled
         var sendNotification = Settings.SystemOptions.SendNotificationBeforeAction.Value;
@@ -229,7 +229,7 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
         var tryGetInputController = GameController.PluginBridge.GetMethod<Func<string, IInputController>>("InputHumanizer.TryGetInputController");
         if (tryGetInputController == null)
         {
-            Logger.Log(LogType.Error, "InputHumanizer method not registered.");
+            Log.Error( "InputHumanizer method not registered.");
             return false;
         }
 
@@ -238,7 +238,7 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
         inputController = tryGetInputController(Name);
         if (inputController == null)
         {
-            Logger.Log(LogType.Error, "Input controller not found.");
+            Log.Error( "Input controller not found.");
             return false;
         }
 

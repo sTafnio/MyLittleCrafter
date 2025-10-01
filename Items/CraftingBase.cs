@@ -8,6 +8,7 @@ using MyLittleCrafter.Handlers;
 using SharpDX;
 using static ExileCore.PoEMemory.MemoryObjects.ServerInventory;
 using static MyLittleCrafter.MyLittleCrafter;
+using MyLittleCrafter.Utils;
 
 namespace MyLittleCrafter.Items;
 
@@ -49,7 +50,7 @@ public class CraftingBase
         {
             if (!await _currentHandler.WaitForItem(ClientRect, token))
             {
-                Logger.Log(LogType.Error, $"UpdateItemData: Timeout waiting for craftable item in {ItemLocation}.");
+                Log.Error( $"UpdateItemData: Timeout waiting for craftable item in {ItemLocation}.");
                 return false;
             }
 
@@ -61,14 +62,14 @@ public class CraftingBase
             // Standard handling using handler interface
             if (!await _currentHandler.WaitForItem(ClientRect, token))
             {
-                Logger.Log(LogType.Error, $"UpdateItemData: Timeout waiting for craftable item in {ItemLocation}.");
+                Log.Error( $"UpdateItemData: Timeout waiting for craftable item in {ItemLocation}.");
                 return false;
             }
 
             var item = _currentHandler.GetItem(ClientRect);
             if (item == null)
             {
-                Logger.Log(LogType.Error, $"UpdateItemData: Item not found at {ItemLocation}.");
+                Log.Error( $"UpdateItemData: Item not found at {ItemLocation}.");
                 return false;
             }
 
@@ -77,7 +78,7 @@ public class CraftingBase
 
         if (newItem == null)
         {
-            Logger.Log(LogType.Error, $"UpdateItemData: Entity is null at {ItemLocation}.");
+            Log.Error( $"UpdateItemData: Entity is null at {ItemLocation}.");
             return false;
         }
 
@@ -92,7 +93,7 @@ public class CraftingBase
     {
         if (!_stateMachine.TryTransitionTo(targetLocation, out var errorMessage))
         {
-            Logger.Log(LogType.Error, $"Invalid state transition: {errorMessage}");
+            Log.Error( $"Invalid state transition: {errorMessage}");
             return false;
         }
 
@@ -108,7 +109,7 @@ public class CraftingBase
     {
         if (!TransitionTo(ItemLocation.HarvestBench))
         {
-            Logger.Log(LogType.Error, $"Cannot move to HarvestBench from {ItemLocation}. Stopping crafting.");
+            Log.Error( $"Cannot move to HarvestBench from {ItemLocation}. Stopping crafting.");
             return false;
         }
 
@@ -124,7 +125,7 @@ public class CraftingBase
     {
         if (!TransitionTo(ItemLocation.CraftingBench))
         {
-            Logger.Log(LogType.Error, $"Cannot move to CraftingBench from {ItemLocation}. Stopping crafting.");
+            Log.Error( $"Cannot move to CraftingBench from {ItemLocation}. Stopping crafting.");
             return false;
         }
 
@@ -140,14 +141,14 @@ public class CraftingBase
     {
         if (!TransitionTo(ItemLocation.CurrencyStash))
         {
-            Logger.Log(LogType.Error, $"Cannot move to CurrencyStash from {ItemLocation}. Stopping crafting.");
+            Log.Error( $"Cannot move to CurrencyStash from {ItemLocation}. Stopping crafting.");
             return false;
         }
 
         var firstItem = StashHandler.GetFirstCraftableItemInVisibleStash();
         if (firstItem == null)
         {
-            Logger.Log(LogType.Error, "OnMovedToCurrencyStash: No craftable item found in stash.");
+            Log.Error( "OnMovedToCurrencyStash: No craftable item found in stash.");
             return false;
         }
 
@@ -163,13 +164,13 @@ public class CraftingBase
     {
         if (inventSlotItem == null)
         {
-            Logger.Log(LogType.Error, "OnMovedToPlayerInventory: InventSlotItem is null.");
+            Log.Error( "OnMovedToPlayerInventory: InventSlotItem is null.");
             return false;
         }
 
         if (!TransitionTo(ItemLocation.PlayerInventory))
         {
-            Logger.Log(LogType.Error, $"Cannot move to PlayerInventory from {ItemLocation}. Stopping crafting.");
+            Log.Error( $"Cannot move to PlayerInventory from {ItemLocation}. Stopping crafting.");
             return false;
         }
 
@@ -185,13 +186,13 @@ public class CraftingBase
     {
         if (!TransitionTo(ItemLocation.OutputStash))
         {
-            Logger.Log(LogType.Error, $"Cannot move to OutputStash from {ItemLocation}. Stopping crafting.");
+            Log.Error( $"Cannot move to OutputStash from {ItemLocation}. Stopping crafting.");
             return false;
         }
 
         // No client rect needed - item is finished and won't be retrieved again
         ClientRect = RectangleF.Empty;
-        Logger.Log(LogType.Info, "Item moved to OutputStash - crafting complete.");
+        Log.Info( "Item moved to OutputStash - crafting complete.");
         return true;
     }
 }

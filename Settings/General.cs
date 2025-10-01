@@ -5,6 +5,7 @@ using ExileCore.Shared.Attributes;
 using ExileCore.Shared.Nodes;
 using ImGuiNET;
 using MyLittleCrafter.Enums;
+using MyLittleCrafter.Utils;
 
 namespace MyLittleCrafter.Settings;
 
@@ -12,7 +13,7 @@ namespace MyLittleCrafter.Settings;
 public class General
 {
     [Menu("Toggle", "Toggle to start/stop the crafting process.")]
-    public HotkeyNodeV2 ToggleButton { get; set; } = new HotkeyNodeV2(Keys.None);
+    public HotkeyNode ToggleButton { get; set; } = new HotkeyNode(Keys.None);
 
     [Newtonsoft.Json.JsonIgnore]
     [Menu(null, "Select crafting type.")]
@@ -38,7 +39,7 @@ public class General
                 if (ImGui.RadioButton(method.ToString(), isSelected))
                 {
                     SelectedMethod = method;
-                    Logger.Log(LogType.Debug, $"Selected crafting method: {method}");
+                    Log.Debug( $"Selected crafting method: {method}");
                 }
 
                 if (i < methodCount - 1)

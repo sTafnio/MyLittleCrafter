@@ -4,7 +4,7 @@ using ExileCore.PoEMemory.MemoryObjects;
 using ExileCore.Shared.Enums;
 using SharpDX;
 using static ExileCore.PoEMemory.MemoryObjects.ServerInventory;
-using MyLittleCrafter.Enums;
+using MyLittleCrafter.Utils;
 
 namespace MyLittleCrafter.Handlers;
 
@@ -32,8 +32,8 @@ public static class PlayerInventoryHandler
     {
         var isAvailable = InventoryHandler.GetAllSpecificCurrencyFromServerInventory(PlayerInventoryServerInventory, currency).Count != 0;
 
-        if (isAvailable) Logger.Log(LogType.Debug, $"{currency} is available in player inventory.");
-        else Logger.Log(LogType.Error, $"{currency} is not available in player inventory.");
+        if (isAvailable) Log.Debug( $"{currency} is available in player inventory.");
+        else Log.Error( $"{currency} is not available in player inventory.");
 
         return isAvailable;
     }
