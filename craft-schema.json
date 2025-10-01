@@ -1,0 +1,177 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mylittlecrafter.local/craft-schema.json",
+  "title": "MyLittleCrafter Craft File",
+  "description": "Schema for MyLittleCrafter crafting configuration files",
+  "type": "object",
+  "required": ["Name", "Description", "ItemSelection", "Conditions"],
+  "properties": {
+    "Name": {
+      "type": "string",
+      "description": "Display name for this craft configuration",
+      "minLength": 1
+    },
+    "Description": {
+      "type": "string",
+      "description": "Human-readable description of what this craft does",
+      "minLength": 1
+    },
+    "ItemSelection": {
+      "description": "Query expression to select which items this craft applies to. Can be a simple string or complex object with Or/And/Count operators.",
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "$ref": "#/definitions/QueryObject"
+        }
+      ]
+    },
+    "Conditions": {
+      "type": "array",
+      "description": "List of crafting conditions to execute in order. Must contain at least one condition.",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/Condition"
+      }
+    }
+  },
+  "definitions": {
+    "Condition": {
+      "type": "object",
+      "required": ["Type", "Query", "UseShift"],
+      "properties": {
+        "Type": {
+          "type": "string",
+          "description": "The currency or craft type to use. If contains 'Craft' = Crafting Bench, if contains 'Reforge' = Harvest Bench, otherwise = Stackable Currency. Note: Cannot mix Crafting Bench and Harvest Bench in the same file.",
+          "minLength": 1,
+          "examples": [
+            "Orb of Alteration",
+            "Orb of Transmutation",
+            "Orb of Augmentation",
+            "Orb of Scouring",
+            "Chaos Orb",
+            "Orb of Alchemy",
+            "Exalted Orb",
+            "Divine Orb",
+            "Blessed Orb",
+            "Vaal Orb",
+            "Orb of Fusing",
+            "Chromatic Orb",
+            "Jeweller's Orb",
+            "Reforge Cold",
+            "Reforge Fire",
+            "Reforge Lightning",
+            "Reforge Chaos",
+            "Reforge Life",
+            "Reforge Caster",
+            "Reforge Attack",
+            "Reforge Speed",
+            "Reforge Critical",
+            "Craft (25-34) to maximum Mana",
+            "Craft (60-69) to maximum Life",
+            "Craft +1 to Level of Socketed Gems"
+          ]
+        },
+        "Query": {
+          "description": "Condition expression - can be a simple string or a complex object with Or/And/Count operators. Uses ItemFilterLibrary query syntax.",
+          "oneOf": [
+            {
+              "type": "string",
+              "description": "Simple query string expression"
+            },
+            {
+              "$ref": "#/definitions/QueryObject"
+            }
+          ]
+        },
+        "UseShift": {
+          "type": "boolean",
+          "description": "Whether to hold Shift when using this currency/craft. Note: Only allowed for Stackable Currency (not bench/harvest crafts)."
+        },
+        "_comment": {
+          "type": "string",
+          "description": "Optional comment for documentation purposes (ignored by parser)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "QueryObject": {
+      "type": "object",
+      "description": "Complex query object with logical operators (case-insensitive). Supports Or, And, and Count operators.",
+      "minProperties": 1,
+      "maxProperties": 1,
+      "oneOf": [
+        {
+          "properties": {
+            "Or": {
+              "$ref": "#/definitions/QueryArray",
+              "description": "Logical OR - any condition can match"
+            }
+          },
+          "required": ["Or"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "or": {
+              "$ref": "#/definitions/QueryArray",
+              "description": "Logical OR - any condition can match (lowercase variant)"
+            }
+          },
+          "required": ["or"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "And": {
+              "$ref": "#/definitions/QueryArray",
+              "description": "Logical AND - all conditions must match"
+            }
+          },
+          "required": ["And"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "and": {
+              "$ref": "#/definitions/QueryArray",
+              "description": "Logical AND - all conditions must match (lowercase variant)"
+            }
+          },
+          "required": ["and"],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "description": "Count operator - counts how many conditions are true",
+          "patternProperties": {
+            "^[Cc]ount\\s*(==|!=|<=|>=|<|>)\\s*-?\\d+$": {
+              "$ref": "#/definitions/QueryArray"
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1,
+          "maxProperties": 1
+        }
+      ]
+    },
+    "QueryArray": {
+      "type": "array",
+      "description": "Array of query expressions or nested query objects",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Query expression string using ItemFilterLibrary syntax"
+          },
+          {
+            "$ref": "#/definitions/QueryObject"
+          }
+        ]
+      }
+    }
+  }
+}
