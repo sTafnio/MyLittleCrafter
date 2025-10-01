@@ -17,19 +17,19 @@ public static class EvaluationHandler
                 isItemFinished: true,
                 currency: string.Empty,
                 useShift: false,
-                conditionType: ConditionType.Global
+                conditionType: ConditionType.ItemSelection
             );
         }
 
         return Main.CurrentCraftingFile.EvaluateItem(craftingBase.ItemData);
     }
 
-    public static bool IsItemMatchingGlobalCondition(InventSlotItem inventSlotItem)
+    public static bool IsItemMatchingItemSelection(InventSlotItem inventSlotItem)
     {
         if (Main.CurrentCraftingFile == null)
             return false;
 
-        return Main.CurrentCraftingFile.MatchesGlobalCondition(inventSlotItem, Main.GameController);
+        return Main.CurrentCraftingFile.MatchesItemSelection(inventSlotItem, Main.GameController);
     }
 
     public static bool IsItemFinished(ItemData itemData)

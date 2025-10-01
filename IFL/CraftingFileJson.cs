@@ -21,6 +21,7 @@ public class CraftingFileJson
     public string Description { get; set; }
 
     [JsonProperty("ItemSelection")]
+    [JsonConverter(typeof(QueryConverter))]
     public string ItemSelection { get; set; }
 
     [JsonProperty("Conditions")]
@@ -38,6 +39,9 @@ public class ConditionJson
     [JsonProperty("Query")]
     [JsonConverter(typeof(QueryConverter))]
     public string Query { get; set; } // Automatically converted from string or Or/And object
+    
+    [JsonIgnore]
+    public JToken OriginalQueryJson { get; set; } // Store the original JSON for display
 
     [JsonProperty("UseShift")]
     public bool UseShift { get; set; }
@@ -54,7 +58,7 @@ public class ConditionJson
             _ => ConditionType.StackableCurrencyUse,
         };
 
-        return new CraftCondition(Type, conditionType, UseShift, Query, compiledQuery);
+        return new CraftCondition(Type, conditionType, UseShift, Query, compiledQuery, OriginalQueryJson);
     }
 }
 
@@ -68,9 +72,20 @@ public class QueryConverter : JsonConverter<string>
         @"^Count\s*(==|!=|<=|>=|<|>)\s*(-?\d+)$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase
     );
+    
+    // List to store tokens in order during deserialization
+    private static readonly List<JToken> _tokenList = new List<JToken>();
+    
+    public static void ClearTokenCache() => _tokenList.Clear();
+    
+    public static JToken GetTokenAtIndex(int index) => index >= 0 && index < _tokenList.Count ? _tokenList[index] : null;
+    
     public override string ReadJson(JsonReader reader, Type objectType, string existingValue, bool hasExistingValue, JsonSerializer serializer)
     {
         var token = JToken.Load(reader);
+        
+        // Store token in the list (order matters!)
+        _tokenList.Add(token);
 
         // Simple string
         if (token.Type == JTokenType.String)
@@ -82,25 +97,36 @@ public class QueryConverter : JsonConverter<string>
         if (token.Type == JTokenType.Object)
         {
             var obj = (JObject)token;
+            string result = null;
 
-            if (obj["Or"] != null)
+            // Check for Or (case-insensitive)
+            var orProperty = obj.Properties().FirstOrDefault(p => p.Name.Equals("Or", StringComparison.OrdinalIgnoreCase));
+            if (orProperty != null)
             {
-                var conditions = obj["Or"].Select(t => ProcessToken(t)).Where(s => !string.IsNullOrEmpty(s));
-                return string.Join(" || ", conditions.Select(c => $"({c})"));
+                var conditions = orProperty.Value.Select(t => ProcessToken(t)).Where(s => !string.IsNullOrEmpty(s));
+                result = string.Join(" || ", conditions.Select(c => $"({c})"));
             }
-
-            if (obj["And"] != null)
+            // Check for And (case-insensitive)
+            else
             {
-                var conditions = obj["And"].Select(t => ProcessToken(t)).Where(s => !string.IsNullOrEmpty(s));
-                return string.Join(" && ", conditions.Select(c => $"({c})"));
+                var andProperty = obj.Properties().FirstOrDefault(p => p.Name.Equals("And", StringComparison.OrdinalIgnoreCase));
+                if (andProperty != null)
+                {
+                    var conditions = andProperty.Value.Select(t => ProcessToken(t)).Where(s => !string.IsNullOrEmpty(s));
+                    result = string.Join(" && ", conditions.Select(c => $"({c})"));
+                }
+                // Check for Count operator (e.g., "Count == 2", "Count < 3")
+                else
+                {
+                    var countProperty = obj.Properties().FirstOrDefault(p => CountRegex.IsMatch(p.Name));
+                    if (countProperty != null)
+                    {
+                        result = ProcessCountToken(countProperty);
+                    }
+                }
             }
-
-            // Check for Count operator (e.g., "Count == 2", "Count < 3")
-            var countProperty = obj.Properties().FirstOrDefault(p => CountRegex.IsMatch(p.Name));
-            if (countProperty != null)
-            {
-                return ProcessCountToken(countProperty);
-            }
+            
+            return result ?? string.Empty;
         }
 
         return string.Empty;
@@ -118,15 +144,19 @@ public class QueryConverter : JsonConverter<string>
             // Recursively process nested Or/And/Count
             var obj = (JObject)token;
 
-            if (obj["Or"] != null)
+            // Check for Or (case-insensitive)
+            var orProperty = obj.Properties().FirstOrDefault(p => p.Name.Equals("Or", StringComparison.OrdinalIgnoreCase));
+            if (orProperty != null)
             {
-                var conditions = obj["Or"].Select(t => ProcessToken(t)).Where(s => !string.IsNullOrEmpty(s));
+                var conditions = orProperty.Value.Select(t => ProcessToken(t)).Where(s => !string.IsNullOrEmpty(s));
                 return string.Join(" || ", conditions.Select(c => $"({c})"));
             }
 
-            if (obj["And"] != null)
+            // Check for And (case-insensitive)
+            var andProperty = obj.Properties().FirstOrDefault(p => p.Name.Equals("And", StringComparison.OrdinalIgnoreCase));
+            if (andProperty != null)
             {
-                var conditions = obj["And"].Select(t => ProcessToken(t)).Where(s => !string.IsNullOrEmpty(s));
+                var conditions = andProperty.Value.Select(t => ProcessToken(t)).Where(s => !string.IsNullOrEmpty(s));
                 return string.Join(" && ", conditions.Select(c => $"({c})"));
             }
 

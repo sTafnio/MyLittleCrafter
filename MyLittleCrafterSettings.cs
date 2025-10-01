@@ -195,11 +195,13 @@ public class StashOptions
 }
 
 
-[Submenu(CollapsedByDefault = true)]
+[Submenu(EnableCollapsing = false)]
 public class SelectedCraftFileDisplay
 {
     [JsonIgnore]
+    [Menu(null, null)]
     public CustomNode SelectedCraftConditions { get; set; } = new();
+    
     public SelectedCraftFileDisplay()
     {
         SelectedCraftConditions.DrawDelegate = () =>
@@ -208,31 +210,80 @@ public class SelectedCraftFileDisplay
 
             if (Main.CurrentCraftingFile != null)
             {
-                // Display file info
+                // Display file header with styling
                 if (!string.IsNullOrEmpty(Main.CurrentCraftingFile.Name))
                 {
-                    ImGui.TextColored(new Vector4(0.3f, 0.8f, 1f, 1f), $"File: {Main.CurrentCraftingFile.Name}");
+                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.3f, 0.9f, 1f, 1f));
+                    ImGui.TextUnformatted(Main.CurrentCraftingFile.Name);
+                    ImGui.PopStyleColor();
                 }
                 if (!string.IsNullOrEmpty(Main.CurrentCraftingFile.Description))
                 {
-                    ImGui.TextColored(new Vector4(0.7f, 0.7f, 0.7f, 1f), Main.CurrentCraftingFile.Description);
+                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.7f, 0.7f, 0.7f, 1f));
+                    ImGui.TextWrapped(Main.CurrentCraftingFile.Description);
+                    ImGui.PopStyleColor();
                 }
 
                 ImGui.Spacing();
+                ImGui.Separator();
+                ImGui.Spacing();
 
-                // Display all conditions
-                foreach (var condition in Main.CurrentCraftingFile.GetAllConditions())
+                // Display ItemSelection condition with tree node
+                if (Main.CurrentCraftingFile.ItemSelectionCondition != null)
                 {
-                    ImGui.TextColored(new Vector4(0f, 1f, 0.022f, 1f), condition.Type + (condition.UseShift ? " - Shift" : string.Empty));
-                    ImGui.SetNextItemWidth(399);
-                    ImGui.Separator();
-                    ImGui.TextUnformatted(condition.RawQuery);
+                    var itemSelCond = Main.CurrentCraftingFile.ItemSelectionCondition;
+                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1f, 0.7f, 0.3f, 1f));
+                    if (ImGui.TreeNodeEx("ItemSelection", ImGuiTreeNodeFlags.DefaultOpen))
+                    {
+                        ImGui.PopStyleColor();
+                        ImGui.Spacing();
+                        
+                        // Use the new query formatter for ItemSelection too
+                        UI.QueryDisplayFormatter.RenderQuery(itemSelCond.OriginalQueryJson, itemSelCond.RawQuery);
+                        
+                        ImGui.Spacing();
+                        ImGui.TreePop();
+                    }
+                    else
+                    {
+                        ImGui.PopStyleColor();
+                    }
                     ImGui.Spacing();
+                }
+
+                // Display crafting conditions with tree nodes
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.5f, 1f, 0.5f, 1f));
+                ImGui.TextUnformatted($"Crafting Conditions ({Main.CurrentCraftingFile.CraftingConditions.Count})");
+                ImGui.PopStyleColor();
+                ImGui.Separator();
+                ImGui.Spacing();
+
+                foreach (var condition in Main.CurrentCraftingFile.CraftingConditions)
+                {
+                    // Build condition header with shift indicator
+                    var header = $"{condition.Type}{(condition.UseShift ? " [Shift]" : "")}";
+                    
+                    ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(0.4f, 1f, 0.4f, 1f));
+                    if (ImGui.TreeNode(header))
+                    {
+                        ImGui.PopStyleColor();
+                        ImGui.Spacing();
+                        
+                        // Use the new query formatter
+                        UI.QueryDisplayFormatter.RenderQuery(condition.OriginalQueryJson, condition.RawQuery);
+                        
+                        ImGui.Spacing();
+                        ImGui.TreePop();
+                    }
+                    else
+                    {
+                        ImGui.PopStyleColor();
+                    }
                 }
             }
             else
             {
-                ImGui.Text("No valid crafting file selected.");
+                ImGui.TextColored(new Vector4(1f, 0.3f, 0.3f, 1f), "No valid crafting file selected.");
             }
         };
     }

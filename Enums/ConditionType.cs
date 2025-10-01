@@ -2,7 +2,7 @@ namespace MyLittleCrafter.Enums;
 
 public enum ConditionType
 {
-    Global,
+    ItemSelection,
     StackableCurrencyUse,
     CraftingBenchCraft,
     HarvestBenchCraft,

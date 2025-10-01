@@ -116,35 +116,35 @@ public static class CraftingSetupManager
 
         switch (selectedMethod)
         {
-            // Inventory and Full Stash can only have Stackable Currency Use and Global conditions
+            // Inventory and Full Stash can only have Stackable Currency Use and ItemSelection conditions
             case CraftingMethod.Inventory or CraftingMethod.FullStash:
                 isValid = Main.CurrentCraftingFile.GetAllConditions().All(condition =>
-                    condition.ConditionType == ConditionType.StackableCurrencyUse || condition.ConditionType == ConditionType.Global);
+                    condition.ConditionType == ConditionType.StackableCurrencyUse || condition.ConditionType == ConditionType.ItemSelection);
                 if (!isValid)
                 {
-                    Logger.Log(LogType.Error, $"Invalid condition type(s) exist for {selectedMethod}. Only Stackable Currency Use and Global conditions are allowed.");
+                    Logger.Log(LogType.Error, $"Invalid condition type(s) exist for {selectedMethod}. Only Stackable Currency Use and ItemSelection conditions are allowed.");
                     return false;
                 }
                 break;
 
-            // Crafting Bench can only have Stackable Currency Use, Harvest Bench Craft and Global conditions
+            // Crafting Bench can only have Stackable Currency Use, Crafting Bench Craft and ItemSelection conditions
             case CraftingMethod.CraftingBench:
                 isValid = Main.CurrentCraftingFile.GetAllConditions().All(condition =>
-                    condition.ConditionType == ConditionType.StackableCurrencyUse || condition.ConditionType == ConditionType.CraftingBenchCraft || condition.ConditionType == ConditionType.Global);
+                    condition.ConditionType == ConditionType.StackableCurrencyUse || condition.ConditionType == ConditionType.CraftingBenchCraft || condition.ConditionType == ConditionType.ItemSelection);
                 if (!isValid)
                 {
-                    Logger.Log(LogType.Error, $"Invalid condition type(s) exist for {selectedMethod}. Only Stackable Currency Use, Crafting Bench Craft and Global conditions are allowed.");
+                    Logger.Log(LogType.Error, $"Invalid condition type(s) exist for {selectedMethod}. Only Stackable Currency Use, Crafting Bench Craft and ItemSelection conditions are allowed.");
                     return false;
                 }
                 break;
 
-            // Harvest Bench can only have Stackable Currency Use, Harvest Bench Craft and Global conditions
+            // Harvest Bench can only have Stackable Currency Use, Harvest Bench Craft and ItemSelection conditions
             case CraftingMethod.HarvestBench:
                 isValid = Main.CurrentCraftingFile.GetAllConditions().All(condition =>
-                    condition.ConditionType == ConditionType.StackableCurrencyUse || condition.ConditionType == ConditionType.HarvestBenchCraft || condition.ConditionType == ConditionType.Global);
+                    condition.ConditionType == ConditionType.StackableCurrencyUse || condition.ConditionType == ConditionType.HarvestBenchCraft || condition.ConditionType == ConditionType.ItemSelection);
                 if (!isValid)
                 {
-                    Logger.Log(LogType.Error, $"Invalid condition type(s) exist for {selectedMethod}. Only Stackable Currency Use, Harvest Bench Craft and Global conditions are allowed.");
+                    Logger.Log(LogType.Error, $"Invalid condition type(s) exist for {selectedMethod}. Only Stackable Currency Use, Harvest Bench Craft and ItemSelection conditions are allowed.");
                     return false;
                 }
                 break;
@@ -170,7 +170,7 @@ public static class CraftingSetupManager
     public static CraftingBase ProcessInventSlotItem(InventSlotItem inventSlotItem, ItemLocation itemLocation)
     {
         if (inventSlotItem == null) return null;
-        if (!EvaluationHandler.IsItemMatchingGlobalCondition(inventSlotItem)) return null;
+        if (!EvaluationHandler.IsItemMatchingItemSelection(inventSlotItem)) return null;
         if (EvaluationHandler.IsItemFinished(inventSlotItem)) return null;
 
         return new CraftingBase(inventSlotItem, itemLocation);

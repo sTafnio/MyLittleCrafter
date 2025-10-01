@@ -19,6 +19,9 @@ public static class JsonFileParser
     {
         try
         {
+            // Clear token cache before deserializing to ensure clean state
+            QueryConverter.ClearTokenCache();
+            
             // Read file asynchronously
             var jsonContent = await File.ReadAllTextAsync(filePath, cancellationToken);
             
@@ -53,14 +56,14 @@ public static class JsonFileParser
             }
 
             // Create CraftingFile domain object
-            var globalCondition = allConditions.FirstOrDefault(c => c.ConditionType == ConditionType.Global);
-            var craftingConditions = allConditions.Where(c => c.ConditionType != ConditionType.Global).ToList();
+            var itemSelectionCondition = allConditions.FirstOrDefault(c => c.ConditionType == ConditionType.ItemSelection);
+            var craftingConditions = allConditions.Where(c => c.ConditionType != ConditionType.ItemSelection).ToList();
 
             var craftingFile = new CraftingFile
             {
                 Name = craftingFileJson.Name,
                 Description = craftingFileJson.Description,
-                GlobalCondition = globalCondition,
+                ItemSelectionCondition = itemSelectionCondition,
                 CraftingConditions = craftingConditions
             };
 
@@ -84,10 +87,14 @@ public static class JsonFileParser
     {
         var conditions = new List<CraftCondition>();
 
-        // Add Global/ItemSelection condition first
+        // Add ItemSelection condition first
         if (!string.IsNullOrEmpty(craftingFile.ItemSelection))
         {
-            // Compile the global query
+            // ItemSelection now uses QueryConverter, so retrieve its token
+            // The token for ItemSelection is at index 0 (parsed first)
+            var itemSelectionToken = QueryConverter.GetTokenAtIndex(0);
+            
+            // Compile the query
             var globalQuery = ItemQuery.Load(craftingFile.ItemSelection.Replace("\n", ""));
             if (globalQuery == null)
             {
@@ -95,19 +102,26 @@ public static class JsonFileParser
             }
 
             conditions.Add(new CraftCondition(
-                "Global",
-                ConditionType.Global,
+                "ItemSelection",
+                ConditionType.ItemSelection,
                 false,
                 craftingFile.ItemSelection,
-                globalQuery
+                globalQuery,
+                itemSelectionToken
             ));
         }
 
         // Convert ConditionJson to CraftCondition with compiled queries
         if (craftingFile.Conditions != null)
         {
-            foreach (var conditionJson in craftingFile.Conditions)
+            for (int i = 0; i < craftingFile.Conditions.Count; i++)
             {
+                var conditionJson = craftingFile.Conditions[i];
+                
+                // Retrieve the original JSON token for this condition using its index
+                // Add 1 to account for ItemSelection being at index 0
+                conditionJson.OriginalQueryJson = QueryConverter.GetTokenAtIndex(i + 1);
+                
                 var compiledQuery = ItemQuery.Load(conditionJson.Query.Replace("\n", ""));
                 if (compiledQuery == null)
                 {
@@ -123,16 +137,16 @@ public static class JsonFileParser
 
     private static string ValidateConditions(List<CraftCondition> conditions)
     {
-        // Ensure there is at least one non-global condition
-        if (!conditions.Any(c => c.ConditionType != ConditionType.Global))
+        // Ensure there is at least one non-ItemSelection condition
+        if (!conditions.Any(c => c.ConditionType != ConditionType.ItemSelection))
         {
-            return "Must contain at least one non-global condition.";
+            return "Must contain at least one condition besides ItemSelection.";
         }
 
-        // Ensure there is exactly one global condition
-        if (conditions.Count(c => c.ConditionType == ConditionType.Global) != 1)
+        // Ensure there is exactly one ItemSelection condition
+        if (conditions.Count(c => c.ConditionType == ConditionType.ItemSelection) != 1)
         {
-            return "Must contain exactly one ItemSelection (global) condition.";
+            return "Must contain exactly one ItemSelection condition.";
         }
 
         // Ensure using shift is only used with stackable currency use

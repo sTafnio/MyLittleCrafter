@@ -13,7 +13,7 @@ public class CraftingFile
 {
     public string Name { get; init; }
     public string Description { get; init; }
-    public CraftCondition GlobalCondition { get; init; }
+    public CraftCondition ItemSelectionCondition { get; init; }
     public List<CraftCondition> CraftingConditions { get; init; }
 
     /// <summary>
@@ -48,7 +48,7 @@ public class CraftingFile
             isItemFinished: true,
             currency: string.Empty,
             useShift: false,
-            conditionType: ConditionType.Global
+            conditionType: ConditionType.ItemSelection
         );
     }
 
@@ -61,31 +61,31 @@ public class CraftingFile
     }
 
     /// <summary>
-    /// Checks if the item matches the global/ItemSelection condition
+    /// Checks if the item matches the ItemSelection condition
     /// </summary>
-    public bool MatchesGlobalCondition(ItemData itemData)
+    public bool MatchesItemSelection(ItemData itemData)
     {
-        return GlobalCondition?.CompiledQuery?.Matches(itemData) ?? false;
+        return ItemSelectionCondition?.CompiledQuery?.Matches(itemData) ?? false;
     }
 
     /// <summary>
-    /// Checks if the item matches the global/ItemSelection condition
+    /// Checks if the item matches the ItemSelection condition
     /// </summary>
-    public bool MatchesGlobalCondition(InventSlotItem inventSlotItem, ExileCore.GameController gameController)
+    public bool MatchesItemSelection(InventSlotItem inventSlotItem, ExileCore.GameController gameController)
     {
         var itemData = new ItemData(inventSlotItem.Item, gameController);
-        return MatchesGlobalCondition(itemData);
+        return MatchesItemSelection(itemData);
     }
 
     /// <summary>
-    /// Gets all conditions including the global condition
+    /// Gets all conditions including the ItemSelection condition
     /// </summary>
     public List<CraftCondition> GetAllConditions()
     {
         var all = new List<CraftCondition>();
-        if (GlobalCondition != null)
+        if (ItemSelectionCondition != null)
         {
-            all.Add(GlobalCondition);
+            all.Add(ItemSelectionCondition);
         }
         all.AddRange(CraftingConditions);
         return all;

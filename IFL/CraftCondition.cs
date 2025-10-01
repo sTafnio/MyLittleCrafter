@@ -1,5 +1,6 @@
 using ItemFilterLibrary;
 using MyLittleCrafter.Enums;
+using Newtonsoft.Json.Linq;
 
 namespace MyLittleCrafter.IFL;
 
@@ -12,5 +13,6 @@ public record CraftCondition(
     ConditionType ConditionType,
     bool UseShift,
     string RawQuery,
-    ItemQuery CompiledQuery);
+    ItemQuery CompiledQuery,
+    JToken OriginalQueryJson = null);
 
