@@ -5,24 +5,24 @@ using System.Text.RegularExpressions;
 using ImGuiNET;
 using Newtonsoft.Json.Linq;
 
-namespace MyLittleCrafter.UI;
+namespace MyLittleCrafter.Utils;
 
 /// <summary>
 /// Formats and displays query JSON structures in a readable hierarchical format
 /// </summary>
 public static class QueryDisplayFormatter
 {
-    private static readonly Regex CountRegex = new Regex(
+    private static readonly Regex CountRegex = new(
         @"^Count\s*(==|!=|<=|>=|<|>)\s*(-?\d+)$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase
     );
 
     // Color scheme
-    private static readonly Vector4 OperatorColor = new Vector4(1f, 0.8f, 0.2f, 1f); // Gold
-    private static readonly Vector4 KeywordColor = new Vector4(0.4f, 0.9f, 1f, 1f); // Cyan
-    private static readonly Vector4 StringColor = new Vector4(0.7f, 1f, 0.7f, 1f); // Light green
-    private static readonly Vector4 NumberColor = new Vector4(1f, 0.6f, 0.8f, 1f); // Pink
-    private static readonly Vector4 BracketColor = new Vector4(0.8f, 0.8f, 0.8f, 1f); // Gray
+    private static readonly Vector4 OperatorColor = new(1f, 0.8f, 0.2f, 1f); // Gold
+    private static readonly Vector4 KeywordColor = new(0.4f, 0.9f, 1f, 1f); // Cyan
+    private static readonly Vector4 StringColor = new(0.7f, 1f, 0.7f, 1f); // Light green
+    private static readonly Vector4 NumberColor = new(1f, 0.6f, 0.8f, 1f); // Pink
+    private static readonly Vector4 BracketColor = new(0.8f, 0.8f, 0.8f, 1f); // Gray
 
     /// <summary>
     /// Renders a query in a hierarchical, colored format

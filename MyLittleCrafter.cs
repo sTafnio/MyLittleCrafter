@@ -46,7 +46,7 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
     public override bool Initialise()
     {
         Main = this;
-        RegisterHotkey(Settings.General.ToggleButton.Value);
+        RegisterHotkey(Settings.General.ToggleButton.Value.Key);
 
         keysToRelease = [Keys.LButton, Keys.RButton, Keys.LControlKey, Keys.LShiftKey, Keys.F, Keys.V, Keys.Left, Keys.Right];
         foreach (var key in keysToRelease) Input.RegisterKey(key);

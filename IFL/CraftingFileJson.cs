@@ -68,13 +68,13 @@ public class ConditionJson
 public class QueryConverter : JsonConverter<string>
 {
     // Regex to match Count operators like "Count == 2", "Count < 3", etc.
-    private static readonly Regex CountRegex = new Regex(
+    private static readonly Regex CountRegex = new(
         @"^Count\s*(==|!=|<=|>=|<|>)\s*(-?\d+)$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase
     );
     
     // List to store tokens in order during deserialization
-    private static readonly List<JToken> _tokenList = new List<JToken>();
+    private static readonly List<JToken> _tokenList = new();
     
     public static void ClearTokenCache() => _tokenList.Clear();
     
