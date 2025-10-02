@@ -9,7 +9,7 @@ namespace MyLittleCrafter.Tracker;
 public class CraftInfo
 {
     public DateTime StartTime { get; set; } = DateTime.Now;
-    public string CraftName { get; set; } = Main.Settings.FileOptions.SelectedCraftingFile.Value;
+    public string CraftName { get; set; } = Main.CurrentCraftingFile?.Name ?? "Unknown";
     public Dictionary<string, int> ResourcesUsed { get; set; } = [];
     public Dictionary<string, double> ResourcesCostPerOneUnit { get; set; } = [];
     public int FinishedItemCount { get; set; } = 0;

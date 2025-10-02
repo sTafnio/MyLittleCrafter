@@ -14,7 +14,7 @@ public static class HarvestCraftingManager
     {
         try
         {
-            Log.CraftingState( $"Started {Main.Settings.FileOptions.SelectedCraftingFile.Value} with {Main.ItemsToCraftOnList.Count} bases.");
+            Log.CraftingState( $"Started {Main.CurrentCraftingFile.Name} with {Main.ItemsToCraftOnList.Count} bases.");
             int itemIndex = 0;
 
             foreach (var craftingBase in Main.ItemsToCraftOnList)
@@ -70,7 +70,7 @@ public static class HarvestCraftingManager
                 }
             }
 
-            Log.Success( $"Finished crafting all {itemIndex} items for {Main.Settings.FileOptions.SelectedCraftingFile.Value}.");
+            Log.Success( $"Finished crafting all {itemIndex} items for {Main.CurrentCraftingFile.Name}.");
             return true;
         }
         catch (OperationCanceledException)

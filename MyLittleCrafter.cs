@@ -17,6 +17,7 @@ using ExileCore.Shared.Helpers;
 using ExileCore.PoEMemory.Models;
 using MyLittleCrafter.Enums;
 using MyLittleCrafter.Utils;
+using MoreLinq;
 
 namespace MyLittleCrafter;
 
@@ -27,14 +28,17 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
     public CancellationTokenSource OperationCts;
     public IInputController InputController;
     public Random Random;
+    public PluginBridge PluginBridge;
     public Vector2N ClickWindowOffset;
     public SyncTask<bool> CurrentOperation;
     private List<Keys> keysToRelease = [];
-    private List<string> availableCraftFilesList = [];
-    public List<CraftCondition> CurrentCraftingConditionsList = [];
+
+    public List<string> AvailableCraftFilesList = [];
+    public List<CraftingFile> SelectedCraftingFiles = [];
+
     public CraftingFile CurrentCraftingFile = null;
     public List<CraftingBase> ItemsToCraftOnList = [];
-    public PluginBridge PluginBridge;
+
 
     public MyLittleCrafter()
     {
@@ -53,14 +57,16 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
 
         UpdateAvailableCraftFiles();
 
-        Settings.FileOptions.SelectedCraftingFile.OnValueSelected += (fileName) =>
+        // Load enabled craft files on plugin initialization
+        var enabledFiles = Settings.CraftFileRules
+            .Where(r => r.Enabled)
+            .Select(r => r.FileName)
+            .ToArray();
+        
+        if (enabledFiles.Length > 0)
         {
-            _ = FileHandler.LoadCraftingFileAsync(fileName);
-        };
-
-        if (!string.IsNullOrEmpty(Settings.FileOptions.SelectedCraftingFile))
-        {
-            _ = FileHandler.LoadCraftingFileAsync(Settings.FileOptions.SelectedCraftingFile);
+            _ = FileHandler.LoadCraftingFilesAsync(enabledFiles);
+            Log.Info($"Auto-loading {enabledFiles.Length} enabled craft file(s) on plugin start...");
         }
 
         Settings.DiscordNotifications.TestWebhook.OnPressed += () =>
@@ -88,15 +94,15 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
         if (PluginBridge != null)
         {
             Tracker.Tracker.GetBaseItemTypeValue = PluginBridge.GetMethod<Func<BaseItemType, double>>("NinjaPrice.GetBaseItemTypeValue");
-            Log.Info( "NinjaPrice plugin bridge found. NinjaPrice integration enabled.");
+            Log.Info("NinjaPrice plugin bridge found. NinjaPrice integration enabled.");
         }
         else
         {
-            Log.Info( "NinjaPrice plugin bridge not found. NinjaPrice integration will be disabled.");
+            Log.Info("NinjaPrice plugin bridge not found. NinjaPrice integration will be disabled.");
         }
 
-        GameController.PluginBridge.SaveMethod("MyLittleCrafter.Start", (Action)Start);
-        GameController.PluginBridge.SaveMethod("MyLittleCrafter.Stop", (Action)Stop);
+        PluginBridge.SaveMethod("MyLittleCrafter.Start", (Action)Start);
+        PluginBridge.SaveMethod("MyLittleCrafter.Stop", (Action)Stop);
 
 
         return true;
@@ -104,14 +110,36 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
 
     public void UpdateAvailableCraftFiles()
     {
-        availableCraftFilesList = new DirectoryInfo(ConfigDirectory)
+        AvailableCraftFilesList = new DirectoryInfo(ConfigDirectory)
             .GetFiles("*.json")
             .Select(x => Path.GetFileNameWithoutExtension(x.Name))
             .OrderBy(x => x)
             .ToList();
 
-        Settings.FileOptions.SelectedCraftingFile.SetListValues(availableCraftFilesList);
-        Log.Info( $"Updated available craft files (found {availableCraftFilesList.Count} JSON files).");
+        // Sync with CraftFileRules
+        foreach (var fileName in AvailableCraftFilesList)
+        {
+            if (!Settings.CraftFileRules.Any(r => r.FileName == fileName))
+            {
+                Settings.CraftFileRules.Add(new Settings.CraftFileRule
+                {
+                    FileName = fileName,
+                    Enabled = false
+                });
+            }
+        }
+
+        // Remove rules for files that no longer exist
+        var rulesToRemove = Settings.CraftFileRules
+            .Where(r => !AvailableCraftFilesList.Contains(r.FileName))
+            .ToList();
+
+        foreach (var rule in rulesToRemove)
+        {
+            Settings.CraftFileRules.Remove(rule);
+        }
+
+        Log.Info($"Updated available craft files (found {AvailableCraftFilesList.Count} JSON files).");
     }
 
     private static void RegisterHotkey(HotkeyNode hotkey)
@@ -149,6 +177,15 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
 
     public void Start()
     {
+        // Check if we have any craft files selected
+        if (SelectedCraftingFiles.Count == 0)
+        {
+            Log.Error("No craft files are selected. Please enable at least one craft file in the File Selection tab.");
+            return;
+        }
+        
+        Log.Info($"Starting crafter with {SelectedCraftingFiles.Count} craft file(s): {string.Join(", ", SelectedCraftingFiles.Select(f => f.Name))}");
+        
         ItemsToCraftOnList = [];
         ResetCancellationTokenSource();
         CurrentOperation = CraftingStart(OperationCts.Token);
@@ -188,7 +225,9 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
             DiscordService.SendDiscordNotification(messageContent, statsContent);
         }
 
-        Log.Info( "Crafter has been stopped.");
+        CurrentCraftingFile = null;
+
+        Log.Info("Crafter has been stopped.");
 
         // Execute system actions if enabled
         var sendNotification = Settings.SystemOptions.SendNotificationBeforeAction.Value;
@@ -229,7 +268,7 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
         var tryGetInputController = GameController.PluginBridge.GetMethod<Func<string, IInputController>>("InputHumanizer.TryGetInputController");
         if (tryGetInputController == null)
         {
-            Log.Error( "InputHumanizer method not registered.");
+            Log.Error("InputHumanizer method not registered.");
             return false;
         }
 
@@ -238,7 +277,7 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
         inputController = tryGetInputController(Name);
         if (inputController == null)
         {
-            Log.Error( "Input controller not found.");
+            Log.Error("Input controller not found.");
             return false;
         }
 
@@ -254,24 +293,62 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
             {
                 if (!await CraftingSetupManager.LoadStashes(token)) return false;
 
-                if (!CraftingSetupManager.SetUpCrafting()) return false;
-
-                Tracker.Tracker.StartCraft();
-
-                switch (Settings.General.SelectedMethod)
+                for (int i = 0; i < SelectedCraftingFiles.Count; i++)
                 {
-                    case CraftingMethod.Inventory:
-                        if (!await InventoryCraftingManager.CraftItems(token)) return false;
-                        break;
-                    case CraftingMethod.CraftingBench:
-                        if (!await BenchCraftingManager.CraftItems(token)) return false;
-                        break;
-                    case CraftingMethod.HarvestBench:
-                        if (!await HarvestCraftingManager.CraftItems(token)) return false;
-                        return false;
-                    case CraftingMethod.FullStash:
-                        if (!await FullStashCraftingManager.CraftItems(token)) return false;
-                        break;
+                    // Check for cancellation before processing each craft file
+                    token.ThrowIfCancellationRequested();
+                    
+                    CurrentCraftingFile = SelectedCraftingFiles[i];
+                    Log.Info($"Processing craft file {i + 1}/{SelectedCraftingFiles.Count}: {CurrentCraftingFile.Name}");
+                    
+                    try
+                    {
+                        // Clear items list for this craft file to avoid stale entries from previous iterations
+                        Main.ItemsToCraftOnList.Clear();
+                        
+                        if (!CraftingSetupManager.SetUpCrafting())
+                        {
+                            Log.Error($"Failed to setup crafting for {CurrentCraftingFile.Name}. Skipping to next file.");
+                            continue;
+                        }
+
+                        Tracker.Tracker.StartCraft();
+
+                        bool craftingSucceeded = false;
+                        switch (Settings.General.SelectedMethod)
+                        {
+                            case CraftingMethod.Inventory:
+                                craftingSucceeded = await InventoryCraftingManager.CraftItems(token);
+                                break;
+                            case CraftingMethod.CraftingBench:
+                                craftingSucceeded = await BenchCraftingManager.CraftItems(token);
+                                break;
+                            case CraftingMethod.HarvestBench:
+                                craftingSucceeded = await HarvestCraftingManager.CraftItems(token);
+                                break;
+                            case CraftingMethod.FullStash:
+                                craftingSucceeded = await FullStashCraftingManager.CraftItems(token);
+                                break;
+                        }
+                        
+                        if (!craftingSucceeded)
+                        {
+                            Log.Error($"Crafting failed for {CurrentCraftingFile.Name}. Skipping to next file.");
+                            continue;
+                        }
+                        
+                        Log.Info($"Successfully completed crafting for {CurrentCraftingFile.Name}");
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        Log.Info("Crafting cancelled by user.");
+                        throw; // Re-throw to be caught by outer catch
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error($"Error processing {CurrentCraftingFile.Name}: {ex.Message}. Skipping to next file.");
+                        continue;
+                    }
                 }
             }
             catch (OperationCanceledException)
