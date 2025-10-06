@@ -20,6 +20,9 @@ public static class PlayerInventoryHandler
         .ThenBy(item => item.PosY)
         .ToList();
 
+    public static List<InventSlotItem> TradableDivCardsInPlayerInventory =>
+        InventoryHandler.GetTradableDivCardsFromServerInventory(PlayerInventoryServerInventory);
+
     public static bool PlayerInventoryCurrencyListCheck()
     {
         var missingCurrencies = StateHandler.RequiredCurrenciesForSelectedCraft
@@ -32,8 +35,8 @@ public static class PlayerInventoryHandler
     {
         var isAvailable = InventoryHandler.GetAllSpecificCurrencyFromServerInventory(PlayerInventoryServerInventory, currency).Count != 0;
 
-        if (isAvailable) Log.Debug( $"{currency} is available in player inventory.");
-        else Log.Error( $"{currency} is not available in player inventory.");
+        if (isAvailable) Log.Debug($"{currency} is available in player inventory.");
+        else Log.Error($"{currency} is not available in player inventory.");
 
         return isAvailable;
     }

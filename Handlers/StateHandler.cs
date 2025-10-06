@@ -41,34 +41,39 @@ public static class StateHandler
     {
         if (!IsInGame)
         {
-            Log.Error( "Not in game.");
+            Log.Error("Not in game.");
             return true;
         }
         if (!IsGameFocused)
         {
-            Log.Error( "Game is not focused.");
+            Log.Error("Game is not focused.");
             return true;
         }
         if (!PlayerInventoryHandler.IsPlayerInventoryPanelOpen)
         {
-            Log.Error( "Player inventory is not open.");
+            Log.Error("Player inventory is not open.");
             return true;
         }
         if (Main.Settings.General.SelectedMethod == CraftingMethod.HarvestBench && !HarvestBenchHandler.IsHarvestBenchPanelOpen)
         {
-            Log.Error( "Harvest bench is not open.");
+            Log.Error("Harvest bench is not open.");
             return true;
         }
         if (Main.Settings.General.SelectedMethod == CraftingMethod.CraftingBench && !CraftingBenchHandler.IsCraftingBenchPanelOpen)
         {
-            Log.Error( "Crafting bench is not open.");
+            Log.Error("Crafting bench is not open.");
+            return true;
+        }
+        if (Main.Settings.General.SelectedMethod == CraftingMethod.OpenDivinationCard && !CardTradeHandler.IsCardTradingWindowOpen)
+        {
+            Log.Error("Divination Card Trade Window is not open.");
             return true;
         }
         if (Main.Settings.General.SelectedMethod == CraftingMethod.FullStash)
         {
             if (!StashHandler.IsStashPanelOpen)
             {
-                Log.Error( "Stash is not open.");
+                Log.Error("Stash is not open.");
                 return true;
             }
         }

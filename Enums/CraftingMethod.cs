@@ -6,5 +6,6 @@ public enum CraftingMethod
     Inventory,
     CraftingBench,
     HarvestBench,
-    FullStash
+    FullStash,
+    OpenDivinationCard
 }

@@ -26,6 +26,19 @@ public static class InventoryHandler
             .ThenBy(item => item.PosY)
             .ToList();
 
+    public static List<InventSlotItem> GetTradableDivCardsFromServerInventory(ServerInventory serverInventory) =>
+        serverInventory.InventorySlotItems
+            .Where(item => item.Item.IsValid
+                           && item.Item.TryGetComponent<Stack>(out var stackComp)
+                           && stackComp != null && stackComp.Address != 0
+                           && stackComp.FullStack
+                           && item.Item.TryGetComponent<Base>(out var baseComp)
+                           && baseComp != null && baseComp.Address != 0
+                           && baseComp.Info.BaseItemTypeDat.ClassName == "DivinationCard")
+            .OrderBy(item => item.PosX)
+            .ThenBy(item => item.PosY)
+            .ToList();
+
     public static ServerInventory GetServerInventoryFromInventorySlotE(InventorySlotE invSlot) =>
         Main?.GameController?.Game?.IngameState?.ServerData?.PlayerInventories[(int)invSlot]?.Inventory;
 
@@ -41,13 +54,13 @@ public static class InventoryHandler
     }
 
     public static async SyncTask<bool> WaitForInventoryToUpdate(ServerInventory serverInventory, int initialServerRequestCounter, CancellationToken token)
-    {        
+    {
         var result = await ExecuteHandler.AsyncExecuteWithCancellationHandling(() =>
         {
             var serverRequestCounter = GetServerRequestCounterForServerInventory(serverInventory);
             return serverRequestCounter != initialServerRequestCounter;
         }, token);
-        
+
         return result;
     }
 
@@ -57,7 +70,7 @@ public static class InventoryHandler
         var currencyClientRect = closestCurrency.GetClientRect();
 
         var randomPoint = HelperHandler.GetRandomPointInRectangleF(currencyClientRect);
-        Log.Debug( $"Random point for {currency}: {randomPoint}");
+        Log.Debug($"Random point for {currency}: {randomPoint}");
 
         return randomPoint;
     }

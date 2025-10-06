@@ -22,7 +22,7 @@ public static class HelperHandler
 
     public static Vector2 GetRandomPointInRectangleF(RectangleF clientRect)
     {
-        var clickPadding = 7;
+        var clickPadding = 10;
         var minX = clientRect.TopLeft.X + clickPadding;
         var maxX = clientRect.BottomRight.X - clickPadding;
         var minY = clientRect.TopLeft.Y + clickPadding;

@@ -62,7 +62,7 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
             .Where(r => r.Enabled)
             .Select(r => r.FileName)
             .ToArray();
-        
+
         if (enabledFiles.Length > 0)
         {
             _ = FileHandler.LoadCraftingFilesAsync(enabledFiles);
@@ -183,9 +183,9 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
             Log.Error("No craft files are selected. Please enable at least one craft file in the File Selection tab.");
             return;
         }
-        
+
         Log.Info($"Starting crafter with {SelectedCraftingFiles.Count} craft file(s): {string.Join(", ", SelectedCraftingFiles.Select(f => f.Name))}");
-        
+
         ItemsToCraftOnList = [];
         ResetCancellationTokenSource();
         CurrentOperation = CraftingStart(OperationCts.Token);
@@ -291,63 +291,72 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
         {
             try
             {
-                if (!await CraftingSetupManager.LoadStashes(token)) return false;
-
-                for (int i = 0; i < SelectedCraftingFiles.Count; i++)
+                if (Settings.General.SelectedMethod == CraftingMethod.OpenDivinationCard)
                 {
-                    // Check for cancellation before processing each craft file
-                    token.ThrowIfCancellationRequested();
-                    
-                    CurrentCraftingFile = SelectedCraftingFiles[i];
-                    Log.Info($"Processing craft file {i + 1}/{SelectedCraftingFiles.Count}: {CurrentCraftingFile.Name}");
-                    
-                    try
+                    if (!await DivCardOpener.OpenDivCards(token)) return false;
+                    return true;
+                }
+
+                else
+                {
+                    if (!await CraftingSetupManager.LoadStashes(token)) return false;
+
+                    for (int i = 0; i < SelectedCraftingFiles.Count; i++)
                     {
-                        // Clear items list for this craft file to avoid stale entries from previous iterations
-                        Main.ItemsToCraftOnList.Clear();
-                        
-                        if (!CraftingSetupManager.SetUpCrafting())
+                        // Check for cancellation before processing each craft file
+                        token.ThrowIfCancellationRequested();
+
+                        CurrentCraftingFile = SelectedCraftingFiles[i];
+                        Log.Info($"Processing craft file {i + 1}/{SelectedCraftingFiles.Count}: {CurrentCraftingFile.Name}");
+
+                        try
                         {
-                            Log.Error($"Failed to setup crafting for {CurrentCraftingFile.Name}. Skipping to next file.");
+                            // Clear items list for this craft file to avoid stale entries from previous iterations
+                            Main.ItemsToCraftOnList.Clear();
+
+                            if (!CraftingSetupManager.SetUpCrafting())
+                            {
+                                Log.Error($"Failed to setup crafting for {CurrentCraftingFile.Name}. Skipping to next file.");
+                                continue;
+                            }
+
+                            Tracker.Tracker.StartCraft();
+
+                            bool craftingSucceeded = false;
+                            switch (Settings.General.SelectedMethod)
+                            {
+                                case CraftingMethod.Inventory:
+                                    craftingSucceeded = await InventoryCraftingManager.CraftItems(token);
+                                    break;
+                                case CraftingMethod.CraftingBench:
+                                    craftingSucceeded = await BenchCraftingManager.CraftItems(token);
+                                    break;
+                                case CraftingMethod.HarvestBench:
+                                    craftingSucceeded = await HarvestCraftingManager.CraftItems(token);
+                                    break;
+                                case CraftingMethod.FullStash:
+                                    craftingSucceeded = await FullStashCraftingManager.CraftItems(token);
+                                    break;
+                            }
+
+                            if (!craftingSucceeded)
+                            {
+                                Log.Error($"Crafting failed for {CurrentCraftingFile.Name}. Skipping to next file.");
+                                continue;
+                            }
+
+                            Log.Info($"Successfully completed crafting for {CurrentCraftingFile.Name}");
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            Log.Info("Crafting cancelled by user.");
+                            throw; // Re-throw to be caught by outer catch
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error($"Error processing {CurrentCraftingFile.Name}: {ex.Message}. Skipping to next file.");
                             continue;
                         }
-
-                        Tracker.Tracker.StartCraft();
-
-                        bool craftingSucceeded = false;
-                        switch (Settings.General.SelectedMethod)
-                        {
-                            case CraftingMethod.Inventory:
-                                craftingSucceeded = await InventoryCraftingManager.CraftItems(token);
-                                break;
-                            case CraftingMethod.CraftingBench:
-                                craftingSucceeded = await BenchCraftingManager.CraftItems(token);
-                                break;
-                            case CraftingMethod.HarvestBench:
-                                craftingSucceeded = await HarvestCraftingManager.CraftItems(token);
-                                break;
-                            case CraftingMethod.FullStash:
-                                craftingSucceeded = await FullStashCraftingManager.CraftItems(token);
-                                break;
-                        }
-                        
-                        if (!craftingSucceeded)
-                        {
-                            Log.Error($"Crafting failed for {CurrentCraftingFile.Name}. Skipping to next file.");
-                            continue;
-                        }
-                        
-                        Log.Info($"Successfully completed crafting for {CurrentCraftingFile.Name}");
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        Log.Info("Crafting cancelled by user.");
-                        throw; // Re-throw to be caught by outer catch
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error($"Error processing {CurrentCraftingFile.Name}: {ex.Message}. Skipping to next file.");
-                        continue;
                     }
                 }
             }
