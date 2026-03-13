@@ -21,7 +21,7 @@ public class CraftingFile
     /// </summary>
     public CraftCondition FindMatchingCondition(ItemData itemData)
     {
-        return CraftingConditions.FirstOrDefault(c => c.CompiledQuery.Matches(itemData));
+        return CraftingConditions.FirstOrDefault(c => c.CompiledQuery?.Matches(itemData) ?? false);
     }
 
     /// <summary>
@@ -32,7 +32,7 @@ public class CraftingFile
         // Find first matching condition
         foreach (var condition in CraftingConditions)
         {
-            if (condition.CompiledQuery.Matches(itemData))
+            if (condition?.CompiledQuery?.Matches(itemData) ?? false)
             {
                 return EvaluationResult.Create(
                     isItemFinished: false,
@@ -57,7 +57,7 @@ public class CraftingFile
     /// </summary>
     public bool IsItemFinished(ItemData itemData)
     {
-        return !CraftingConditions.Any(c => c.CompiledQuery.Matches(itemData));
+        return !CraftingConditions.Any(c => c?.CompiledQuery?.Matches(itemData) ?? false);
     }
 
     /// <summary>
@@ -73,6 +73,9 @@ public class CraftingFile
     /// </summary>
     public bool MatchesItemSelection(InventSlotItem inventSlotItem, ExileCore.GameController gameController)
     {
+        if (inventSlotItem?.Item == null)
+            return false;
+            
         var itemData = new ItemData(inventSlotItem.Item, gameController);
         return MatchesItemSelection(itemData);
     }

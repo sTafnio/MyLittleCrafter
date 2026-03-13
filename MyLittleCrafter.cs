@@ -200,11 +200,11 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
 
         foreach (var key in keysToRelease.Where(Input.IsKeyDown)) Input.KeyUp(key);
 
-        if (StateHandler.IsAnItemRightClicked())
-        {
-            Input.KeyDown(Keys.Escape);
-            Input.KeyUp(Keys.Escape);
-        }
+        // if (StateHandler.IsAnItemRightClicked())
+        // {
+        //     Input.KeyDown(Keys.Escape);
+        //     Input.KeyUp(Keys.Escape);
+        // }
 
         if (InputController != null)
         {
@@ -354,7 +354,12 @@ public class MyLittleCrafter : BaseSettingsPlugin<MyLittleCrafterSettings>
                         }
                         catch (Exception ex)
                         {
-                            Log.Error($"Error processing {CurrentCraftingFile.Name}: {ex.Message}. Skipping to next file.");
+                            Log.Error($"Error processing {CurrentCraftingFile?.Name ?? "Unknown"}: {ex.Message}");
+                            Log.Error($"Stack trace: {ex.StackTrace}");
+                            if (ex.InnerException != null)
+                            {
+                                Log.Error($"Inner exception: {ex.InnerException.Message}");
+                            }
                             continue;
                         }
                     }

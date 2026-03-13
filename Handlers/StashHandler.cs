@@ -71,7 +71,11 @@ public static class StashHandler
         return isAvailable;
     }
 
-    public static ServerInventory GetServerInventoryForStashAtIndex(int index) => GetStashAtIndex(index).Inventory.ServerInventory;
+    public static ServerInventory GetServerInventoryForStashAtIndex(int index)
+    {
+        var stash = GetStashAtIndex(index);
+        return stash?.Inventory?.ServerInventory;
+    }
 
     public static bool IsStashAtIndexVisible(int index) => CurrentVisibleStashIndex == index;
 
@@ -89,13 +93,34 @@ public static class StashHandler
     public static RectangleF GetClientRectForInventSlotItemInInputStash(InventSlotItem inventSlotItem) =>
         GetClientRectForInventSlotItemInStash(InputStashClientRect, inventSlotItem, InputStashIsQuadStash);
 
-    public static InventoryType GetInventoryTypeForStashAtIndex(int index) =>
-        GetStashAtIndex(index).Inventory.InvType;
+    public static InventoryType GetInventoryTypeForStashAtIndex(int index)
+    {
+        var stash = GetStashAtIndex(index);
+        if (stash?.Inventory == null)
+        {
+            return InventoryType.InvalidInventory;
+        }
+        return stash.Inventory.InvType;
+    }
 
-    public static StashTabContainerInventory GetStashAtIndex(int index) => StashElement?.Inventories[index];
+    public static StashTabContainerInventory GetStashAtIndex(int index)
+    {
+        if (StashElement?.Inventories == null || index < 0 || index >= StashElement.Inventories.Count)
+        {
+            return null;
+        }
+        return StashElement.Inventories[index];
+    }
 
-    public static int GetServerRequestCounterForStashAtIndex(int index) =>
-        GetStashAtIndex(index).Inventory.ServerInventory.ServerRequestCounter;
+    public static int GetServerRequestCounterForStashAtIndex(int index)
+    {
+        var stash = GetStashAtIndex(index);
+        if (stash?.Inventory?.ServerInventory == null)
+        {
+            return -1;
+        }
+        return stash.Inventory.ServerInventory.ServerRequestCounter;
+    }
 
     public static RectangleF GetClientRectForInventSlotItemInStash(RectangleF stashTabRect, InventSlotItem inventSlotItem, bool isQuadStash)
     {

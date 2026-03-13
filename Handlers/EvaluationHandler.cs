@@ -21,6 +21,16 @@ public static class EvaluationHandler
             );
         }
 
+        if (craftingBase?.ItemData == null)
+        {
+            return EvaluationResult.Create(
+                isItemFinished: true,
+                currency: string.Empty,
+                useShift: false,
+                conditionType: ConditionType.ItemSelection
+            );
+        }
+
         return Main.CurrentCraftingFile.EvaluateItem(craftingBase.ItemData);
     }
 
@@ -42,6 +52,9 @@ public static class EvaluationHandler
 
     public static bool IsItemFinished(InventSlotItem inventSlotItem)
     {
+        if (inventSlotItem?.Item == null)
+            return true; // Treat null items as finished to skip them
+            
         var itemData = new ItemData(inventSlotItem.Item, Main.GameController);
         return IsItemFinished(itemData);
     }

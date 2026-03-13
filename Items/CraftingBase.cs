@@ -28,6 +28,9 @@ public class CraftingBase
 
     public CraftingBase(InventSlotItem inventSlotItem, ItemLocation itemLocation)
     {
+        if (inventSlotItem?.Item == null)
+            throw new ArgumentNullException(nameof(inventSlotItem), "InventSlotItem or its Item property cannot be null");
+            
         ItemData = new ItemData(inventSlotItem.Item, Main.GameController);
         _stateMachine = new CraftingBaseStateMachine(itemLocation);
         _currentHandler = ItemLocationHandlerFactory.GetHandler(itemLocation);

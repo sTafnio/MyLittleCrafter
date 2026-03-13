@@ -358,11 +358,11 @@ public static class CraftingHandler
         {
             if (!await ShiftUpIfDown(token)) return false;
 
-            if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(StateHandler.IsCursorFree, token))
-            {
-                Log.Error( $"Failed to deselect {currency}: Timeout while waiting for cursor to be free.");
-                return false;
-            }
+            // if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(StateHandler.IsCursorFree, token))
+            // {
+            //     Log.Error( $"Failed to deselect {currency}: Timeout while waiting for cursor to be free.");
+            //     return false;
+            // }
 
             Log.Debug( $"Successfully deselected {currency}.");
             StateHandler.CurrentlySelectedCurrency = string.Empty;
@@ -381,11 +381,11 @@ public static class CraftingHandler
 
         if (!await Main.InputController.Click(MouseButtons.Right, currencyLocation, token)) return false;
 
-        if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(StateHandler.IsAnItemRightClicked, token))
-        {
-            Log.Error( $"Failed to select {currency}: Timeout while waiting for currency to be right clicked.");
-            return false;
-        }
+        // if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(StateHandler.IsAnItemRightClicked, token))
+        // {
+        //     Log.Error( $"Failed to select {currency}: Timeout while waiting for currency to be right clicked.");
+        //     return false;
+        // }
 
         Log.Debug( $"Successfully selected {currency}.");
         StateHandler.CurrentlySelectedCurrency = currency;
@@ -398,11 +398,11 @@ public static class CraftingHandler
 
         if (!await Main.InputController.Click(MouseButtons.Right, currencyLocation, token)) return false;
 
-        if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(StateHandler.IsAnItemRightClicked, token))
-        {
-            Log.Error( $"Failed to select {currency}: Timeout while waiting for currency to be right clicked.");
-            return false;
-        }
+        // if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(StateHandler.IsAnItemRightClicked, token))
+        // {
+        //     Log.Error( $"Failed to select {currency}: Timeout while waiting for currency to be right clicked.");
+        //     return false;
+        // }
 
         Log.Debug( $"Successfully selected {currency}.");
         StateHandler.CurrentlySelectedCurrency = currency;

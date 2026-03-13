@@ -202,11 +202,11 @@ public static class CraftingSetupManager
             return false;
         }
 
-        if (StashHandler.OutputStashTabType != InventoryType.NormalStash && StashHandler.OutputStashTabType != InventoryType.QuadStash)
-        {
-            Log.Error("Output stash tab is not a valid stash tab type. Only Normal or Quad Stash are supported.");
-            return false;
-        }
+        // if (StashHandler.OutputStashTabType != InventoryType.NormalStash && StashHandler.OutputStashTabType != InventoryType.QuadStash)
+        // {
+        //     Log.Error("Output stash tab is not a valid stash tab type. Only Normal or Quad Stash are supported.");
+        //     return false;
+        // }
 
         if (StashHandler.CurrencyStashTabType != InventoryType.CurrencyStash)
         {
