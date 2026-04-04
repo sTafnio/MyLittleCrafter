@@ -138,13 +138,13 @@ public static class CraftingHandler
     {
         try
         {
-            int initialServerRequestCounter;
             string searchString = evaluationResult.CurrencyOrCraftName;
 
             // Get appropriate parameters based on craft type
+            int initialServerRequestCounter = 0;
             if (craftType == ConditionType.HarvestBenchCraft)
             {
-                initialServerRequestCounter = HarvestBenchHandler.HarvestBenchServerRequestCounter;
+                // no counter needed — harvest crafts modify the item in-place
             }
             else if (craftType == ConditionType.CraftingBenchCraft)
             {
@@ -184,17 +184,34 @@ public static class CraftingHandler
             var craftButtonRect = craftType == ConditionType.HarvestBenchCraft
                                 ? HarvestBenchHandler.HarvestCraftButtonRect
                                 : CraftingBenchHandler.CraftingBenchCraftButtonRect;
+
+            // For harvest bench, capture the item address before clicking — the ServerRequestCounter
+            // doesn't update because harvest crafts modify the item in-place (no move in/out of slot).
+            long? harvestItemAddressBeforeCraft = craftType == ConditionType.HarvestBenchCraft
+                ? HarvestBenchHandler.InventSlotItemInHarvestBench?.Item?.Address
+                : null;
+
             if (!await ClickOnItemOrUI(craftButtonRect, token)) return false;
 
-
-            // Wait for the server request counter to be updated
-            var inventory = craftType == ConditionType.HarvestBenchCraft
-                            ? HarvestBenchHandler.HarvestBenchServerInventory
-                            : CraftingBenchHandler.CraftingBenchServerInventory;
-            if (!await InventoryHandler.WaitForInventoryToUpdate(inventory, initialServerRequestCounter, token))
+            // Wait for confirmation that the craft was applied
+            if (craftType == ConditionType.HarvestBenchCraft)
             {
-                Log.Error( $"Timeout while waiting for server request counter to update.");
-                return false;
+                // Wait for the item entity to be replaced (server sends updated item after in-place mod change)
+                if (!await ExecuteHandler.AsyncExecuteWithCancellationHandling(
+                    () => HarvestBenchHandler.InventSlotItemInHarvestBench?.Item?.Address != harvestItemAddressBeforeCraft, token))
+                {
+                    Log.Error($"Timeout while waiting for harvest craft to apply.");
+                    return false;
+                }
+            }
+            else
+            {
+                // Wait for the server request counter to be updated
+                if (!await InventoryHandler.WaitForInventoryToUpdate(CraftingBenchHandler.CraftingBenchServerInventory, initialServerRequestCounter, token))
+                {
+                    Log.Error($"Timeout while waiting for server request counter to update.");
+                    return false;
+                }
             }
 
             Tracker.Tracker.UseResource(evaluationResult.CurrencyOrCraftName);
